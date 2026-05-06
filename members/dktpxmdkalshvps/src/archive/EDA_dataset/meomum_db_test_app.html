@@ -1,0 +1,347 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{font-family:var(--font-sans);color:var(--color-text-primary);padding:1.25rem;max-width:720px}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.card-sm{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem;margin-bottom:8px}
+h2{font-size:18px;font-weight:500;margin-bottom:1rem}
+h3{font-size:15px;font-weight:500;margin-bottom:.5rem}
+label{font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px}
+input[type=text],input[type=password]{width:100%;margin-bottom:8px}
+.btn-primary{background:var(--color-text-primary);color:var(--color-background-primary);border:none;padding:8px 20px;border-radius:var(--border-radius-md);font-size:14px;cursor:pointer;font-family:var(--font-sans)}
+.btn-primary:hover{opacity:.85}
+.btn-sm{font-size:12px;padding:5px 12px;border-radius:var(--border-radius-md);cursor:pointer;background:transparent;border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary);font-family:var(--font-sans)}
+.btn-sm:hover{background:var(--color-background-secondary)}
+.btn-sm.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.preset-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.two-col{display:grid;grid-template-columns:220px 1fr;gap:12px}
+.slider-row{margin-bottom:10px}
+.slider-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.slider-label span:first-child{color:var(--color-text-secondary)}
+.slider-label span:last-child{font-weight:500;font-size:12px;min-width:28px;text-align:right}
+input[type=range]{width:100%;margin-bottom:0}
+.weight-sum{font-size:11px;color:var(--color-text-tertiary);text-align:right;margin-top:6px}
+.weight-sum.warn{color:#E24B4A}
+.rank-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer}
+.rank-item:last-child{border-bottom:none}
+.rank-item:hover .rank-name{text-decoration:underline}
+.rank-num{font-size:20px;font-weight:500;width:28px;text-align:center;flex-shrink:0;color:var(--color-text-tertiary)}
+.rank-num.top1{color:#BA7517}
+.rank-num.top2{color:#888780}
+.rank-num.top3{color:#D85A30}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:15px;font-weight:500;margin-bottom:4px}
+.rank-bar-wrap{height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+.rank-bar{height:100%;border-radius:3px;background:var(--color-text-primary);transition:width .4s ease}
+.rank-score{font-size:16px;font-weight:500;flex-shrink:0;width:42px;text-align:right}
+.cat-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:5px;flex-wrap:wrap}
+.cat-badge{padding:2px 7px;border-radius:20px;font-size:11px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.err{font-size:13px;color:#E24B4A;margin-top:6px}
+.back-btn{font-size:13px;color:var(--color-text-secondary);cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px;background:none;border:none;font-family:var(--font-sans);padding:0}
+.back-btn:hover{color:var(--color-text-primary)}
+.metric-table{width:100%;font-size:13px;border-collapse:collapse}
+.metric-table th{text-align:left;font-weight:500;font-size:12px;color:var(--color-text-secondary);padding:4px 6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.metric-table td{padding:5px 6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.metric-table tr:last-child td{border-bottom:none}
+.score-bar-mini{width:60px;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.score-bar-mini-fill{height:100%;border-radius:3px}
+.cat-section{margin-bottom:1.25rem}
+.cat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cat-avg{font-size:13px;color:var(--color-text-secondary)}
+.cat-avg strong{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.loading{text-align:center;padding:2rem;color:var(--color-text-secondary);font-size:14px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem;text-align:center}
+.stat-val{font-size:22px;font-weight:500}
+.stat-label{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.section-head{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+@media(max-width:520px){.two-col{grid-template-columns:1fr}}
+</style>
+
+<div class="app" id="root"></div>
+
+<script>
+const CAT_LABELS={'traffic':'교통','culture':'문화·여가·디지털','convenience':'생활편의','safety':'안전','nature':'자연'};
+const CAT_COLORS={'traffic':'#378ADD','culture':'#1D9E75','convenience':'#D85A30','safety':'#7F77DD','nature':'#639922'};
+const DEFAULT_WEIGHTS={traffic:20,culture:20,convenience:27,safety:15,nature:18};
+
+let state={
+  step:'config',
+  config:{url:'',anonKey:''},
+  error:'',
+  loading:false,
+  allRows:[],
+  presets:[],
+  weights:{...DEFAULT_WEIGHTS},
+  selectedRegion:null
+};
+
+function setState(patch){
+  Object.assign(state,patch);
+  render();
+}
+
+async function connect(){
+  const url=state.config.url.trim().replace(/\/$/,'');
+  const key=state.config.anonKey.trim();
+  if(!url||!key){setState({error:'URL과 anon key를 모두 입력해주세요.'});return;}
+  setState({loading:true,error:''});
+  try{
+    const h={'apikey':key,'Authorization':'Bearer '+key};
+    const [sr,pr]=await Promise.all([
+      fetch(url+'/rest/v1/v_region_metric_scores?select=*&is_score_metric=eq.true',{headers:h}),
+      fetch(url+'/rest/v1/recommendation_presets?select=*',{headers:h})
+    ]);
+    if(!sr.ok){const t=await sr.text();throw new Error('조회 실패 ('+sr.status+'): '+t.slice(0,120));}
+    const rows=await sr.json();
+    const presets=pr.ok?await pr.json():[];
+    if(!Array.isArray(rows))throw new Error('응답 형식 오류 - URL을 확인해주세요');
+    setState({step:'main',loading:false,allRows:rows,presets,config:{url,anonKey:key}});
+  }catch(e){setState({loading:false,error:e.message});}
+}
+
+function computeRankings(){
+  if(!state.allRows.length)return[];
+  const w=state.weights;
+  const total=Object.values(w).reduce((a,b)=>a+b,0)||1;
+  const map={};
+  for(const row of state.allRows){
+    if(!map[row.region_id])map[row.region_id]={region_id:row.region_id,name:row.region_name_ko,cats:{}};
+    const cat=row.category_id;
+    if(!map[row.region_id].cats[cat])map[row.region_id].cats[cat]=[];
+    if(row.score_100!=null)map[row.region_id].cats[cat].push(+row.score_100);
+  }
+  return Object.values(map).map(r=>{
+    let final=0;const cs={};
+    for(const[cat,arr]of Object.entries(r.cats)){
+      if(!arr.length)continue;
+      const avg=arr.reduce((a,b)=>a+b,0)/arr.length;
+      cs[cat]=avg;
+      final+=avg*((w[cat]||0)/total);
+    }
+    return{...r,finalScore:final,catScores:cs};
+  }).sort((a,b)=>b.finalScore-a.finalScore);
+}
+
+function applyPreset(p){
+  setState({weights:{
+    traffic:Math.round(p.traffic_weight*100),
+    culture:Math.round(p.culture_weight*100),
+    convenience:Math.round(p.convenience_weight*100),
+    safety:Math.round(p.safety_weight*100),
+    nature:Math.round(p.nature_weight*100)
+  }});
+}
+
+function render(){
+  const root=document.getElementById('root');
+  if(state.step==='config')root.innerHTML=renderConfig();
+  else if(state.step==='loading')root.innerHTML=renderLoading();
+  else if(state.step==='main'&&!state.selectedRegion)root.innerHTML=renderMain();
+  else if(state.step==='main'&&state.selectedRegion)root.innerHTML=renderDetail();
+  bindEvents();
+}
+
+function renderConfig(){
+  return`<h2 style="margin-bottom:.25rem">머묾 DB 테스트</h2>
+<p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1.25rem">Supabase 연결 후 지역 추천 점수를 테스트합니다</p>
+<div class="card">
+  <div class="section-head">Supabase 연결 정보</div>
+  <label>Project URL</label>
+  <input type="text" id="inp-url" placeholder="https://xxxx.supabase.co" value="${escHtml(state.config.url)}">
+  <label>Anon Key</label>
+  <input type="password" id="inp-key" placeholder="eyJhbGci..." value="${escHtml(state.config.anonKey)}">
+  ${state.error?`<div class="err">${escHtml(state.error)}</div>`:''}
+  <button class="btn-primary" id="btn-connect" style="margin-top:8px;width:100%">${state.loading?'연결 중...':'연결하기'}</button>
+</div>
+<div class="card" style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">
+  <div class="section-head">체크리스트</div>
+  ${['Supabase client 연결','v_region_metric_scores 조회','is_score_metric = true 필터','20개 본지표만 사용','카테고리별 평균 점수 계산','사용자 가중치 적용','finalScore 계산','TOP 5 출력','지역 상세에서 raw_value + score_100 같이 표시'].map(t=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0"><i class="ti ti-square" aria-hidden="true"></i>${escHtml(t)}</div>`).join('')}
+</div>`;
+}
+
+function renderLoading(){
+  return`<div class="loading"><i class="ti ti-loader" style="font-size:24px;margin-bottom:8px;display:block"></i>Supabase에서 데이터를 불러오는 중...</div>`;
+}
+
+function renderMain(){
+  const rankings=computeRankings();
+  const top5=rankings.slice(0,5);
+  const total=Object.values(state.weights).reduce((a,b)=>a+b,0);
+  const warnSum=Math.abs(total-100)>1;
+  const metricCount=new Set(state.allRows.map(r=>r.metric_id)).size;
+  const regionCount=new Set(state.allRows.map(r=>r.region_id)).size;
+
+  const presetsHtml=state.presets.length?state.presets.map(p=>`
+    <button class="btn-sm preset-btn" data-preset='${JSON.stringify(p)}'>${escHtml(p.preset_name_ko)}</button>`).join(''):'';
+
+  const slidersHtml=Object.keys(CAT_LABELS).map(cat=>`
+    <div class="slider-row">
+      <div class="slider-label">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${CAT_COLORS[cat]};display:inline-block"></span>${CAT_LABELS[cat]}</span>
+        <span id="wlabel-${cat}">${state.weights[cat]}</span>
+      </div>
+      <input type="range" min="0" max="50" step="1" value="${state.weights[cat]}" id="slider-${cat}">
+    </div>`).join('');
+
+  const topScore=top5.length?top5[0].finalScore:100;
+
+  const rankHtml=top5.length?top5.map((r,i)=>{
+    const catPills=Object.entries(r.catScores).filter(([c])=>CAT_LABELS[c]).map(([c,v])=>
+      `<span class="cat-badge" style="border-left:2px solid ${CAT_COLORS[c]}">${CAT_LABELS[c]} ${v.toFixed(0)}</span>`).join('');
+    return`<div class="rank-item" data-regionid="${escAttr(r.region_id)}">
+      <div class="rank-num${i===0?' top1':i===1?' top2':i===2?' top3':''}">${i+1}</div>
+      <div class="rank-info">
+        <div class="rank-name">${escHtml(r.name)}</div>
+        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(r.finalScore/topScore*100).toFixed(1)}%"></div></div>
+        <div class="cat-row">${catPills}</div>
+      </div>
+      <div class="rank-score">${r.finalScore.toFixed(1)}</div>
+    </div>`;
+  }).join(''):`<div style="color:var(--color-text-secondary);font-size:13px;padding:1rem 0">데이터가 없습니다.</div>`;
+
+  return`
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+  <div>
+    <h2 style="margin-bottom:2px">머묾 추천 점수 테스트</h2>
+    <p style="font-size:12px;color:var(--color-text-secondary)">${escHtml(state.config.url)}</p>
+  </div>
+  <button class="btn-sm" id="btn-disconnect">연결 해제</button>
+</div>
+<div class="stat-grid">
+  <div class="stat-box"><div class="stat-val">${regionCount}</div><div class="stat-label">지역 수</div></div>
+  <div class="stat-box"><div class="stat-val">${metricCount}</div><div class="stat-label">본지표 수</div></div>
+  <div class="stat-box"><div class="stat-val">${state.allRows.length}</div><div class="stat-label">데이터 행</div></div>
+</div>
+${presetsHtml?`<div class="card" style="padding:.75rem 1rem">
+  <div class="section-head" style="margin-bottom:6px">추천 프리셋</div>
+  <div class="preset-row">${presetsHtml}</div>
+</div>`:''}
+<div class="two-col">
+  <div class="card" style="padding:.75rem 1rem">
+    <div class="section-head">카테고리 가중치</div>
+    ${slidersHtml}
+    <div class="weight-sum${warnSum?' warn':''}">합계: ${total} ${warnSum?'⚠ 100 권장':''}</div>
+  </div>
+  <div class="card" style="padding:.75rem 1rem">
+    <div class="section-head" style="margin-bottom:6px">TOP 5 지역 <span style="font-weight:400;color:var(--color-text-tertiary)">(클릭하면 상세 보기)</span></div>
+    ${rankHtml}
+  </div>
+</div>`;
+}
+
+function renderDetail(){
+  const rows=state.allRows.filter(r=>r.region_id===state.selectedRegion);
+  if(!rows.length)return`<button class="back-btn" id="btn-back"><i class="ti ti-arrow-left" aria-hidden="true"></i> 뒤로</button><p>데이터 없음</p>`;
+  const name=rows[0].region_name_ko;
+
+  const cats={};
+  for(const row of rows){
+    const c=row.category_id;
+    if(!cats[c])cats[c]=[];
+    cats[c].push(row);
+  }
+
+  const rankings=computeRankings();
+  const rank=rankings.findIndex(r=>r.region_id===state.selectedRegion)+1;
+  const regionData=rankings.find(r=>r.region_id===state.selectedRegion);
+  const finalScore=regionData?regionData.finalScore:null;
+
+  const catsHtml=Object.entries(cats).filter(([c])=>CAT_LABELS[c]).map(([c,metrics])=>{
+    const scores=metrics.filter(m=>m.score_100!=null).map(m=>+m.score_100);
+    const avg=scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:null;
+    const rows=metrics.sort((a,b)=>(a.display_order||0)-(b.display_order||0)).map(m=>{
+      const s=m.score_100!=null?+m.score_100:null;
+      const barFill=s!=null?`<span class="score-bar-mini"><span class="score-bar-mini-fill" style="width:${s}%;background:${CAT_COLORS[c]}"></span></span>`:'-';
+      return`<tr>
+        <td style="color:var(--color-text-primary)">${escHtml(m.metric_name_ko)}</td>
+        <td style="color:var(--color-text-secondary);text-align:right">${m.raw_value!=null?Number(m.raw_value).toFixed(2):'-'}</td>
+        <td style="text-align:right">${s!=null?s.toFixed(1):'-'}</td>
+        <td style="text-align:center">${barFill}</td>
+        <td style="color:var(--color-text-secondary);font-size:11px">${escHtml(m.unit||'-')}</td>
+      </tr>`;
+    }).join('');
+    return`<div class="cat-section">
+      <div class="cat-header">
+        <h3 style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${CAT_COLORS[c]};display:inline-block"></span>${CAT_LABELS[c]}</h3>
+        <div class="cat-avg">카테고리 평균 <strong>${avg!=null?avg.toFixed(1):'-'}</strong></div>
+      </div>
+      <table class="metric-table">
+        <thead><tr><th>지표명</th><th style="text-align:right">원값</th><th style="text-align:right">점수</th><th style="text-align:center">바</th><th>단위</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  return`
+<button class="back-btn" id="btn-back"><i class="ti ti-arrow-left" aria-hidden="true"></i> TOP 5로 돌아가기</button>
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <h2 style="margin-bottom:4px">${escHtml(name)}</h2>
+      <p style="font-size:13px;color:var(--color-text-secondary)">region_id: ${escHtml(state.selectedRegion)}</p>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:28px;font-weight:500">${finalScore!=null?finalScore.toFixed(1):'-'}</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">최종 점수 · 전국 ${rank}위</div>
+    </div>
+  </div>
+</div>
+<div class="card">${catsHtml}</div>`;
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return String(s||'').replace(/"/g,'&quot;');}
+
+function bindEvents(){
+  const bu=document.getElementById('inp-url');
+  const bk=document.getElementById('inp-key');
+  const bc=document.getElementById('btn-connect');
+  const bd=document.getElementById('btn-disconnect');
+  const bb=document.getElementById('btn-back');
+  if(bu)bu.oninput=e=>state.config.url=e.target.value;
+  if(bk)bk.oninput=e=>state.config.anonKey=e.target.value;
+  if(bc){bc.onclick=connect;if(bc.textContent.includes('연결 중'))bc.disabled=true;}
+  if(bd)bd.onclick=()=>setState({step:'config',allRows:[],presets:[],selectedRegion:null,error:''});
+  if(bb)bb.onclick=()=>setState({selectedRegion:null});
+
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    btn.onclick=()=>{try{applyPreset(JSON.parse(btn.dataset.preset));}catch(e){}};
+  });
+
+  ['traffic','culture','convenience','safety','nature'].forEach(cat=>{
+    const sl=document.getElementById('slider-'+cat);
+    if(sl)sl.oninput=e=>{
+      state.weights[cat]=+e.target.value;
+      const lbl=document.getElementById('wlabel-'+cat);
+      if(lbl)lbl.textContent=e.target.value;
+      const total=Object.values(state.weights).reduce((a,b)=>a+b,0);
+      const ws=document.querySelector('.weight-sum');
+      if(ws){
+        ws.textContent='합계: '+total+(Math.abs(total-100)>1?' ⚠ 100 권장':'');
+        ws.className='weight-sum'+(Math.abs(total-100)>1?' warn':'');
+      }
+      const top5Container=document.querySelector('.card:last-child');
+      if(top5Container&&state.step==='main'&&!state.selectedRegion){
+        const rankings=computeRankings();const top5=rankings.slice(0,5);
+        const topScore=top5.length?top5[0].finalScore:100;
+        const rankItems=document.querySelectorAll('.rank-item');
+        rankItems.forEach((item,i)=>{
+          if(top5[i]){
+            item.querySelector('.rank-score').textContent=top5[i].finalScore.toFixed(1);
+            item.querySelector('.rank-bar').style.width=(top5[i].finalScore/topScore*100).toFixed(1)+'%';
+            item.querySelector('.rank-name').textContent=top5[i].name;
+            item.setAttribute('data-regionid',top5[i].region_id);
+          }
+        });
+      }
+    };
+  });
+
+  document.querySelectorAll('.rank-item').forEach(item=>{
+    item.onclick=()=>{const rid=item.getAttribute('data-regionid');if(rid)setState({selectedRegion:rid});};
+  });
+}
+
+render();
+</script>
