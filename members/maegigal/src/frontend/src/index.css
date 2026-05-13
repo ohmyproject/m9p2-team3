@@ -1,0 +1,362 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(124, 171, 129, 0.22), transparent 28%),
+    linear-gradient(135deg, #f6f8f7 0%, #dfe5e7 100%);
+  color: #1f2933;
+  font-family:
+    Inter,
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 22px;
+}
+
+.topbar {
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px;
+  margin-bottom: 22px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    12px 12px 30px rgba(133, 144, 151, 0.26),
+    -10px -10px 26px rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+}
+
+.logo {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  color: #35572e;
+  text-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.75),
+    0 8px 18px rgba(38, 76, 36, 0.22);
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(235, 239, 240, 0.8);
+  box-shadow:
+    inset 4px 4px 8px rgba(168, 178, 184, 0.3),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+.mode-tabs button {
+  border: 0;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: transparent;
+  color: #293241;
+  cursor: pointer;
+}
+
+.mode-tabs button.active {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    5px 5px 12px rgba(150, 160, 166, 0.28),
+    -5px -5px 12px rgba(255, 255, 255, 0.9);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 270px minmax(420px, 1fr) 330px;
+  gap: 22px;
+  align-items: stretch;
+}
+
+.panel,
+.map-card {
+  border-radius: 28px;
+  background: rgba(246, 249, 249, 0.64);
+  box-shadow:
+    14px 14px 32px rgba(130, 142, 150, 0.28),
+    -12px -12px 30px rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+
+.muted {
+  margin: 0 0 22px;
+  color: #7b858c;
+  font-size: 13px;
+}
+
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+}
+
+.slider-label strong {
+  color: #7a8c83;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #8cc59c;
+}
+
+.scale {
+  display: flex;
+  justify-content: space-between;
+  color: #6b747b;
+  font-size: 11px;
+}
+
+.preset-area {
+  margin-top: 34px;
+}
+
+.preset-area h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.preset-grid button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(235, 239, 240, 0.9);
+  color: #27313a;
+  cursor: pointer;
+  box-shadow:
+    4px 4px 10px rgba(153, 163, 170, 0.24),
+    -4px -4px 10px rgba(255, 255, 255, 0.9);
+}
+
+.map-card {
+  position: relative;
+  padding: 26px;
+  min-height: 620px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-placeholder {
+  position: relative;
+  width: min(560px, 90%);
+  aspect-ratio: 0.86;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-glow {
+  position: absolute;
+  width: 58%;
+  height: 58%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(104, 207, 139, 0.55), transparent 65%);
+  filter: blur(12px);
+  transform: translate(-12%, -18%);
+}
+
+.korea-shape {
+  position: relative;
+  width: 330px;
+  height: 460px;
+  border-radius: 52% 48% 58% 42% / 42% 48% 52% 58%;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(212, 219, 221, 0.95)),
+    #f4f6f6;
+  box-shadow:
+    inset -20px -24px 40px rgba(141, 152, 158, 0.22),
+    inset 16px 18px 30px rgba(255, 255, 255, 0.9),
+    28px 35px 42px rgba(129, 141, 148, 0.32);
+  transform: rotate(8deg);
+}
+
+.korea-shape::before {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 45% 55% 50% 50%;
+  background: radial-gradient(circle at 35% 25%, rgba(122, 209, 147, 0.55), transparent 38%);
+}
+
+.korea-shape::after {
+  content: "";
+  position: absolute;
+  width: 88px;
+  height: 48px;
+  bottom: -72px;
+  left: 34px;
+  border-radius: 50%;
+  background: rgba(247, 249, 249, 0.96);
+  box-shadow:
+    inset -8px -8px 15px rgba(143, 154, 160, 0.2),
+    18px 20px 28px rgba(126, 138, 145, 0.24);
+}
+
+.region-label {
+  position: absolute;
+  z-index: 2;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  font-size: 13px;
+  font-weight: 700;
+  transform: rotate(-8deg);
+}
+
+.seoul {
+  top: 95px;
+  left: 115px;
+}
+
+.gangwon {
+  top: 72px;
+  right: 72px;
+}
+
+.busan {
+  right: 48px;
+  bottom: 96px;
+}
+
+.jeju {
+  bottom: -65px;
+  left: 52px;
+}
+
+.map-caption {
+  position: absolute;
+  bottom: 22px;
+  left: 28px;
+  margin: 0;
+  color: #8b959c;
+  font-size: 13px;
+}
+
+.right-panel h2 {
+  margin-bottom: 4px;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.region-card {
+  display: grid;
+  grid-template-columns: 42px 1fr 68px;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    7px 7px 16px rgba(148, 158, 165, 0.22),
+    -7px -7px 16px rgba(255, 255, 255, 0.88);
+}
+
+.rank-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 800;
+  background: linear-gradient(145deg, #6aa979, #9ccda5);
+}
+
+.region-info h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.region-info p {
+  margin: 0;
+  color: #7a858c;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.score-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #345c3b;
+  background:
+    linear-gradient(#f7fbf8, #f7fbf8) padding-box,
+    conic-gradient(#84c994 0deg 270deg, #e3e8e5 270deg 360deg) border-box;
+  border: 6px solid transparent;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .map-card {
+    min-height: 460px;
+  }
+
+  .topbar {
+    height: auto;
+    gap: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px;
+  }
+
+  .mode-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+}

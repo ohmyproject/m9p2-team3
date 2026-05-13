@@ -151,5 +151,4 @@ conda activate <본인-아이디>-env
 | 조은별 | @dktpxmdkalshvps | 팀원 | `members/dktpxmdkalshvps/` |
 | 홍예진 | @maegigal | 팀원 | `members/maegigal/` |
 
-
 > 멤버 등록 시 위 표에 본인 정보를 추가해주세요.
