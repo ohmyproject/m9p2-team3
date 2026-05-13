@@ -1,48 +1,11 @@
-import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import logoImage from "./assets/meomum-logo.png";
-const GeoJsonThreeMap = lazy(() => import("./components/GeoJsonThreeMap.jsx").then((module) => ({ default: module.GeoJsonThreeMap })));
-
-
-class MapErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, message: "" };
-  }
-
-  static getDerivedStateFromError(error) {
-    return {
-      hasError: true,
-      message: error?.message || "3D map rendering error"
-    };
-  }
-
-  componentDidCatch(error) {
-    console.error("3D 지도 렌더링 오류:", error);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <MapFallback isEnglish={this.props.isEnglish} message={this.state.message} />;
-    }
-
-    return this.props.children;
-  }
-}
-
-function MapFallback({ isEnglish, message }) {
-  return (
-    <div className="geojson-map-state map-fallback-state">
-      <strong>{isEnglish ? "3D map is not ready." : "3D 지도를 표시하지 못했습니다."}</strong>
-      <span>
-        {isEnglish
-          ? "Run npm install in the frontend folder, then restart npm run dev."
-          : "frontend 폴더에서 npm install을 실행한 뒤 npm run dev를 다시 실행해 주세요."}
-      </span>
-      {message && <small>{message}</small>}
-    </div>
-  );
-}
+import koreaMapImage from "./assets/korea-map.png";
+import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css"; // 🚨 이 줄을 꼭 추가해 주세요!
+import { geoCentroid } from "d3-geo"; // 🚨 자동으로 땅 가운데를 찾아주는 도구 추가!
 
 const HELP_HERO_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuDGzN9jxwD0VvfAWl47Z7mDWFASDKBptm0hNNxZSayvGZ5_Kuhdoe8XLA9af-Jk8v1fsOm-kILtg1Bs5wIeZoPZemMbbCV3BQXaKacQb92bm0Ys28I6kJT958mEBDTI0IJqx4_U-aMyNoMlH1yOgqcvCvK3LrFa92SeAOLMMjX6VM0t0KpIo4r7pLFICZL7jXgBC1ba1oeXOsZLh-ImK5I6bhlEaEbI-SyNI7C7LcTR3xXdpx2F5kjSRqcZ-gc9RgUuy86C35phT52P";
 
@@ -372,6 +335,30 @@ function regionLogoFor(region) {
   return found?.[1] || "";
 }
 
+function getRegionOnlySearchName(region, isEnglish = false) {
+  const parentName =
+    (isEnglish ? region?.parentRegionNameEn : region?.parentRegionNameKo) ||
+    region?.parent_region_name_ko ||
+    region?.sido_name_ko ||
+    "";
+
+  const regionName =
+    (isEnglish ? region?.en : region?.ko) ||
+    region?.regionNameKo ||
+    region?.region_name_ko ||
+    region?.short ||
+    "";
+
+  const hasParentInRegion = parentName && regionName.includes(parentName);
+
+  return [hasParentInRegion ? "" : parentName, regionName]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+    .replace(/\s*(관광지|여행지|명소|가볼만한곳|맛집)\s*$/g, "")
+    .trim();
+}
+
 function normalizeApiRegion(item, weights) {
   const scores = item.categoryScores || item.category_scores || item.scores || {};
   const ko = item.regionNameKo || item.region_name_ko || item.regionName || item.name_ko || item.ko || "지역";
@@ -400,9 +387,6 @@ function normalizeApiRegion(item, weights) {
     touristSpots: item.touristSpots || item.tourist_spots || [],
     raw: item.raw || [],
     categories: item.categories || null,
-    geoCode: item.geo_code || item.geoCode || item.sig_cd || item.SIG_CD || item.region_code || "",
-    latitude: item.latitude ?? item.lat ?? null,
-    longitude: item.longitude ?? item.lng ?? null,
   };
   region.logoUrl = regionLogoFor(region);
   return region;
@@ -437,6 +421,7 @@ function App() {
   const [mapDrag, setMapDrag] = useState(null);
   const [remoteRankings, setRemoteRankings] = useState([]);
   const [apiStatus, setApiStatus] = useState({ loading: false, error: "" });
+  const [tooltipContent, setTooltipContent] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -534,9 +519,15 @@ function App() {
     }
   }
 
-  function openNaverMap(region) {
-    const url = region?.naverMap?.webUrl || region?.naverMap?.web_url || `https://map.naver.com/p/search/${encodeURIComponent(region.ko)}`;
-    window.open(url, "_blank");
+  function openNaverMap(region, event) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+
+    const regionName = getRegionOnlySearchName(region, isEnglish);
+    if (!regionName) return;
+
+    const url = `https://map.naver.com/p/search/${encodeURIComponent(regionName)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   async function shareCurrent() {
@@ -631,25 +622,8 @@ function App() {
 
       <section className="dashboard-layout">
         <aside className="left-panel">
-          <section className="soft-card preset-card">
-            <div className="card-title">⚡ {isEnglish ? "Presets" : "프리셋"}</div>
-            <div className="preset-list">
-              {Object.entries(PRESETS).map(([key, preset]) => (
-                <button
-                  key={key}
-                  className={`preset-item ${selectedPreset === key ? "selected" : ""}`}
-                  onClick={() => applyPreset(key)}
-                >
-                  <span className="preset-emoji">{preset.icon}</span>
-                  <div>
-                    <strong>{isEnglish ? preset.en : preset.ko}</strong>
-                    <small>{preset.en}</small>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-
+          {isDetail ? (
+            <>
           <section className="soft-card weight-card">
             <div className="card-title">◷ {isEnglish ? "5 Category Weights" : "5대 카테고리 가중치"}</div>
             <div className="slider-list">
@@ -685,39 +659,219 @@ function App() {
               <button onClick={resetWeights}>↻ Reset</button>
             </div>
           </section>
+          <section className="soft-card preset-card">
+            <div className="card-title">⚡ {isEnglish ? "Presets" : "프리셋"}</div>
+            <div className="preset-list">
+              {Object.entries(PRESETS).map(([key, preset]) => (
+                <button
+                  key={key}
+                  className={`preset-item ${selectedPreset === key ? "selected" : ""}`}
+                  onClick={() => applyPreset(key)}
+                >
+                  <span className="preset-emoji">{preset.icon}</span>
+                  <div>
+                    <strong>{isEnglish ? preset.en : preset.ko}</strong>
+                    <small>{preset.en}</small>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+            </>
+          ) : (
+            <>
+          <section className="soft-card preset-card">
+            <div className="card-title">⚡ {isEnglish ? "Presets" : "프리셋"}</div>
+            <div className="preset-list">
+              {Object.entries(PRESETS).map(([key, preset]) => (
+                <button
+                  key={key}
+                  className={`preset-item ${selectedPreset === key ? "selected" : ""}`}
+                  onClick={() => applyPreset(key)}
+                >
+                  <span className="preset-emoji">{preset.icon}</span>
+                  <div>
+                    <strong>{isEnglish ? preset.en : preset.ko}</strong>
+                    <small>{preset.en}</small>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+          <section className="soft-card weight-card">
+            <div className="card-title">◷ {isEnglish ? "5 Category Weights" : "5대 카테고리 가중치"}</div>
+            <div className="slider-list">
+              {CATEGORIES.map((category) => (
+                <div className="slider-row" key={category.key}>
+                  <div className="slider-head">
+                    <span><i>{category.icon}</i>{isEnglish ? category.en : category.ko}</span>
+                    <label className="weight-number-wrap" aria-label={`${isEnglish ? category.en : category.ko} weight value`}>
+                      <input
+                        className="weight-number-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={weights[category.key]}
+                        onChange={(event) => updateWeight(category.key, event.target.value)}
+                        onBlur={(event) => updateWeight(category.key, event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={weights[category.key]}
+                    onChange={(event) => updateWeight(category.key, event.target.value)}
+                  />
+                  <div className="slider-scale"><span>Low</span><span>High</span></div>
+                </div>
+              ))}
+            </div>
+            <div className="weight-actions">
+              <span>{isEnglish ? "Applied to all calculations" : "전체와 계산 적용"}</span>
+              <button onClick={resetWeights}>↻ Reset</button>
+            </div>
+          </section>
+            </>
+          )}
         </aside>
 
-        <section className="map-card">
-          <div className="map-badge">🗺️ {isEnglish ? "Weighted Recommendation Map" : "가중치 기반 추천 지도"}{apiStatus.loading ? (isEnglish ? " · Loading" : " · 계산 중") : ""}</div>
-          <div className="zoom-controls">
-            <button aria-label="지도 확대" onClick={() => changeMapZoom(0.15)}>＋</button>
-            <button aria-label="지도 축소" onClick={() => changeMapZoom(-0.15)}>－</button>
+        <section className="map-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <div className="map-badge" style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 10 }}>
+            🗺️ {isEnglish ? "Weighted Recommendation Map" : "가중치 기반 반응형 지도"}
+            {apiStatus.loading ? (isEnglish ? " · Loading" : " · 계산 중") : ""}
           </div>
-          <div
-            className={`map-wrap ${mapDrag ? "dragging" : ""}`}
-            onContextMenu={(event) => event.preventDefault()}
-            onMouseDown={startMapDrag}
-            onMouseMove={moveMapDrag}
-            onMouseUp={stopMapDrag}
-            onMouseLeave={stopMapDrag}
-            title={isEnglish ? "Right-click and drag to move the 3D map" : "우클릭 후 드래그하면 3D 지도를 이동할 수 있습니다"}
+
+          <div className="zoom-controls" style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10 }}>
+            <button aria-label="지도 확대" onClick={() => changeMapZoom(0.5)}>＋</button>
+            <button aria-label="지도 축소" onClick={() => changeMapZoom(-0.5)}>－</button>
+          </div>
+
+          <ComposableMap
+            projection="geoMercator"
+            projectionConfig={{ scale: 4500 }}
+            style={{ width: "100%", height: "100%", minHeight: "500px", outline: "none", cursor: "grab" }}
           >
-            <MapErrorBoundary isEnglish={isEnglish}>
-              <Suspense fallback={<MapFallback isEnglish={isEnglish} />}>
-                <GeoJsonThreeMap
-                  rankings={rankings}
-                  selectedRegionId={selectedRegion?.id}
-                  isEnglish={isEnglish}
-                  style={{ transform: `translate(${mapOffset.x}px, ${mapOffset.y}px) scale(${mapZoom})` }}
-                  onSelectRegion={(region) => {
-                    if (!region) return;
-                    setSelectedRegionId(region.id);
-                    openDetail(region);
-                  }}
-                />
-              </Suspense>
-            </MapErrorBoundary>
-          </div>
+            <ZoomableGroup
+              center={[127.5, 36]}
+              zoom={mapZoom}
+              onMoveEnd={(position) => setMapZoom(position.zoom)}
+              maxZoom={10}
+            >
+              <Geographies geography="https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_municipalities_geo_simple.json">
+                {({ geographies }) => {
+                  if (!geographies) return null;
+
+                  return (
+                    <>
+                      {/* 🗺️ 1. 땅(지역) 싹 그리기 */}
+                      {geographies.map((geo) => {
+                        const mapName = (geo?.properties?.name || "").replace(/\s+/g, ''); // 예: "부천시원미구", "종로구"
+
+                        const rankIndex = rankings.findIndex(r => {
+                          const rKo = (r.ko || "").replace(/\s+/g, ''); // 예: "경기도부천시"
+                          const rShort = (r.short || "").replace(/\s+/g, '');
+
+                          // 🚨 핵심 로직: "경기도 부천시"에서 마지막 단어인 "부천시"만 추출!
+                          const parts = (r.ko || "").trim().split(/\s+/);
+                          const coreName = parts[parts.length - 1]; // "부천시", "종로구" 등
+
+                          return mapName === rKo || mapName === rShort ||
+                            mapName.includes(coreName) || // "부천시원미구"가 "부천시"를 포함하면 합격!
+                            rKo.includes(mapName);        // "서울특별시종로구"가 "종로구"를 포함하면 합격!
+                        });
+
+                        const isTop5 = rankIndex !== -1 && rankIndex < 5;
+                        const rankColors = ["#2d4a22", "#4b7a3a", "#6ab354", "#97b986", "#c3d6b8"];
+                        const fillColor = isTop5 ? rankColors[rankIndex] : "#e2e8f0";
+                        const strokeColor = isTop5 ? fillColor : "#ffffff"; // 구 경계선 숨기기
+
+                        return (
+                          <Geography
+                            key={geo.rsmKey || geo.properties.code}
+                            geography={geo}
+                            fill={fillColor}
+                            stroke={strokeColor}
+                            strokeWidth={0.5 / mapZoom}
+                            style={{
+                              default: { outline: "none", transition: "fill 0.3s ease" },
+                              hover: { fill: "#db9ebb", cursor: "pointer", outline: "none" },
+                              pressed: { outline: "none" }
+                            }}
+                            onMouseEnter={() => setTooltipContent(isTop5 ? `${rankings[rankIndex].ko}: 🏆 ${rankIndex + 1}위` : (geo?.properties?.name || ""))}
+                            onMouseLeave={() => setTooltipContent("")}
+                            onClick={() => { if (isTop5) setSelectedRegionId(rankings[rankIndex].id); }}
+                            data-tooltip-id="map-tooltip"
+                            data-tooltip-content={tooltipContent}
+                          />
+                        );
+                      })}
+
+                      {/* 📍 2. Top 5 마커 꽂기 */}
+                      {rankings.slice(0, 5).map((rankedRegion, rankIndex) => {
+                        const rKo = (rankedRegion.ko || "").replace(/\s+/g, '');
+                        const rShort = (rankedRegion.short || "").replace(/\s+/g, '');
+                        const parts = (rankedRegion.ko || "").trim().split(/\s+/);
+                        const coreName = parts[parts.length - 1];
+
+                        const matchingGeos = geographies.filter(geo => {
+                          const mapName = (geo?.properties?.name || "").replace(/\s+/g, '');
+                          return mapName === rKo || mapName === rShort ||
+                            mapName.includes(coreName) ||
+                            rKo.includes(mapName);
+                        });
+
+                        if (matchingGeos.length === 0) return null;
+
+                        // 여러 개의 '구'가 합쳐져 있어도 마커는 무조건 1개만 꽂습니다.
+                        const centroid = geoCentroid(matchingGeos[0]);
+                        const isFirst = rankIndex === 0;
+
+                        return (
+                          <Marker
+                            key={`marker-rank-${rankedRegion.id}`}
+                            coordinates={centroid}
+                            onMouseEnter={() => setTooltipContent(`${rankedRegion.ko}: 🏆 ${rankIndex + 1}위`)}
+                            onMouseLeave={() => setTooltipContent("")}
+                            onClick={() => setSelectedRegionId(rankedRegion.id)}
+                            data-tooltip-id="map-tooltip"
+                            data-tooltip-content={tooltipContent}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <g
+                              transform="translate(-12, -24)"
+                              style={{ transition: "all 0.2s ease-in-out" }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = "translate(-12px, -30px) scale(1.15)"}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = "translate(-12px, -24px) scale(1)"}
+                            >
+                              <path
+                                d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 4.5 12 4.5 15.5 6.07 15.5 8 13.93 11.5 12 11.5z"
+                                fill={isFirst ? "#db9ebb" : "#2d4a22"}
+                              />
+                              <text
+                                y="-5"
+                                x="12"
+                                textAnchor="middle"
+                                fill={isFirst ? "#db9ebb" : "#2d4a22"}
+                                fontSize="14px"
+                                fontWeight="bold"
+                                style={{ textShadow: "1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff" }}
+                              >
+                                {rankIndex + 1}위
+                              </text>
+                            </g>
+                          </Marker>
+                        );
+                      })}
+                    </>
+                  );
+                }}
+              </Geographies>
+            </ZoomableGroup>
+          </ComposableMap>
+
+          <Tooltip id="map-tooltip" />
         </section>
 
         <aside className="right-panel">
@@ -741,6 +895,7 @@ function App() {
                 isDetail={isDetail}
                 onSelect={() => setSelectedRegionId(region.id)}
                 onDetail={() => openDetail(region)}
+                onNaver={(event) => openNaverMap(region, event)}
               />
             ))}
           </div>
@@ -753,7 +908,7 @@ function App() {
           mode={mode}
           isEnglish={isEnglish}
           onClose={() => setDetailRegion(null)}
-          onOpenMap={() => openNaverMap(detailRegion)}
+          onOpenMap={(event) => openNaverMap(detailRegion, event)}
         />
       )}
 
@@ -762,8 +917,23 @@ function App() {
   );
 }
 
-function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDetail, onSelect, onDetail }) {
+function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDetail, onSelect, onDetail, onNaver }) {
   const percent = clampScore(region.finalScore);
+  const isSimple = !isDetail && !isSenior;
+  const actionLabel = isSimple
+    ? (isEnglish ? "Naver Map" : "네이버 지도")
+    : (isEnglish ? "View Details" : "상세 보기");
+  const handleAction = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isSimple) {
+      onNaver?.(event);
+      return;
+    }
+
+    onDetail?.();
+  };
   return (
     <article className={`result-card ${selected ? "selected" : ""}`} onClick={onSelect}>
       <span className="rank-num">#{rank}</span>
@@ -779,7 +949,7 @@ function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDet
       </div>
       <div className="result-bottom">
         <span>finalScore <b>{percent}%</b></span>
-        <button onClick={(event) => { event.stopPropagation(); onDetail(); }}>{isEnglish ? "View Details" : "상세 보기"}</button>
+        <button type="button" onClick={handleAction}>{actionLabel}</button>
       </div>
       {isDetail && (
         <div className="mini-scores">
@@ -859,7 +1029,7 @@ function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
   return (
     <div className="modal-backdrop">
       <section className={`detail-modal ${isSenior ? "senior-modal" : ""}`}>
-        <button className="modal-close" onClick={onClose} aria-label="닫기">×</button>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="닫기">×</button>
         <header className="detail-header">
           <p>{isEnglish ? "Region Detail Panel" : "지역 상세 패널"}</p>
           <h1>{isEnglish ? region.en : region.short}</h1>
@@ -868,16 +1038,23 @@ function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
         <div className="detail-body">
           <aside className="detail-left">
             <div className="region-image-card">
-              {region.logoUrl ? <img src={region.logoUrl} alt={isEnglish ? `${region.en} logo` : `${region.ko} 로고`} /> : <span>{isEnglish ? region.en : region.short}</span>}
+              {region.logoUrl ? (
+                <img
+                  src={region.logoUrl}
+                  alt={isEnglish ? `${region.en} logo` : `${region.ko} 로고`}
+                  /* 🚨 마법의 스타일 추가: 삐져나오지 않고 박스 안에 쏙 들어가게 맞춤! */
+                  style={{ width: "100%", height: "100%", maxHeight: "80px", objectFit: "contain" }}
+                />
+              ) : (
+                <span>{isEnglish ? region.en : region.short}</span>
+              )}
             </div>
             <div className="detail-description">
               {isEnglish
-                ? "This recommendation is based on the selected preference weights and regional indicator data."
-                : isSenior
-                ? region.seniorReason
-                : `${region.reason} FastAPI와 Supabase에서 조회한 지역 지표 기반 추천 결과입니다.`}
+                ? "High contribution from daily convenience and culture, leisure, and digital indicators makes this area suitable for long-stay tourism."
+                : "생활편의와 문화·여가·디지털 지표 기여도가 높아 장기체류 관광에 적합합니다."}
             </div>
-            <button className="naver-button" onClick={onOpenMap}>{isEnglish ? "Open Naver Map" : "Naver 지도 열기"}</button>
+            <button type="button" className="naver-button" onClick={onOpenMap}>{isEnglish ? "Open Naver Map" : "Naver 지도 열기"}</button>
           </aside>
           <main className="detail-right">
             <div className="bars">
