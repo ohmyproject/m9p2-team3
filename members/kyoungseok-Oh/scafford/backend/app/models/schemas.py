@@ -127,13 +127,14 @@ class AiExplainRegionRequest(BaseModel):
     region_id: str
     weights: Weights
     language: Literal["ko", "en"] = "ko"
+    preset_id: Optional[str] = "default"
 
 
 class AiCompareRegionsRequest(BaseModel):
     region_ids: List[str] = Field(min_length=2, max_length=3)
     weights: Weights
     language: Literal["ko", "en"] = "ko"
-
+    preset_id: Optional[str] = "default"
     @field_validator("region_ids")
     @classmethod
     def validate_region_ids(cls, value: List[str]) -> List[str]:

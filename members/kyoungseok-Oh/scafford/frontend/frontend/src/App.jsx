@@ -297,9 +297,9 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 const PRESET_ID_MAP = {
   standard: "default",
   tourist: "foreign_tourist",
-  nomad: "remote_worker",
-  senior: "active_senior",
-  solo: "culture_single_couple",
+  nomad: "digital_nomad",
+  senior: "senior_traveler",
+  solo: "couple_culture",
 };
 
 const REGION_LOGO_MAP = [
@@ -907,6 +907,7 @@ function App() {
           mode={mode}
           isEnglish={isEnglish}
           weights={weights}
+          presetId={PRESET_ID_MAP[selectedPreset] || selectedPreset}
           onClose={() => setDetailRegion(null)}
           onOpenMap={() => openNaverMap(detailRegion)}
         />
@@ -1047,7 +1048,7 @@ function normalizeList(value) {
   return [];
 }
 
-function RagInsightPanel({ region, weights, isEnglish }) {
+function RagInsightPanel({ region, weights, presetId, isEnglish }) {
   const [ragData, setRagData] = React.useState(null);
   const [ragLoading, setRagLoading] = React.useState(false);
   const [ragError, setRagError] = React.useState("");
@@ -1076,6 +1077,7 @@ function RagInsightPanel({ region, weights, isEnglish }) {
           },
           body: JSON.stringify({
             region_id: regionId,
+            preset_id: presetId || "default",
             weights: normalizeWeights(weights),
             language: isEnglish ? "en" : "ko",
           }),
@@ -1100,103 +1102,70 @@ function RagInsightPanel({ region, weights, isEnglish }) {
     }
 
     fetchRagInsight();
-  }, [region, weights, isEnglish]);
+  }, [region, weights, presetId, isEnglish]);
 
   const regionName = isEnglish
     ? region?.region_name_en || region?.en || region?.regionNameEn
     : region?.region_name_ko || region?.ko || region?.regionNameKo;
 
   function safeText(value, fallback = "") {
-  if (value === null || value === undefined) return fallback;
-  if (typeof value === "string" || typeof value === "number") return String(value);
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === "string" || typeof value === "number") return String(value);
 
-  if (Array.isArray(value)) {
-    return value.map((item) => safeText(item)).filter(Boolean).join(", ");
+    if (Array.isArray(value)) {
+      return value.map((item) => safeText(item)).filter(Boolean).join(", ");
+    }
+
+    if (typeof value === "object") {
+      return (
+        value.text ||
+        value.content ||
+        value.summary ||
+        value.title ||
+        value.description ||
+        fallback
+      );
+    }
+
+    return fallback;
   }
 
-  if (typeof value === "object") {
-    return (
-      value.text ||
-      value.content ||
-      value.summary ||
-      value.title ||
-      value.description ||
-      fallback
-    );
-  }
+  const generated =
+    ragData?.generated ||
+    ragData?.result ||
+    ragData?.ai_result ||
+    ragData?.explanation ||
+    ragData;
 
-  return fallback;
-}
+  const title =
+    safeText(generated?.title) ||
+    (isEnglish
+      ? `Why ${regionName || "this region"} was recommended`
+      : `${regionName || "선택 지역"} 추천 근거`);
 
-function safeList(value) {
-  if (!value) return [];
+  const presetPerspective =
+    safeText(
+      generated?.preset_perspective ||
+        generated?.presetPerspective ||
+        generated?.perspective
+    ) || "";
 
-  if (Array.isArray(value)) {
-    return value.map((item) => safeText(item)).filter(Boolean);
-  }
+  const scoreContribution =
+    safeText(
+      generated?.score_contribution ||
+        generated?.scoreContribution ||
+        generated?.contribution
+    ) || "";
 
-  if (typeof value === "string") {
-    return value.trim() ? [value] : [];
-  }
+  const integratedSummary =
+    safeText(
+      generated?.integrated_summary ||
+        generated?.integratedSummary ||
+        generated?.final_summary ||
+        generated?.summary
+    ) || "";
 
-  if (typeof value === "object") {
-    return Object.values(value)
-      .map((item) => safeText(item))
-      .filter(Boolean);
-  }
-
-  return [];
-}
-
-const generated =
-  ragData?.generated ||
-  ragData?.result ||
-  ragData?.ai_result ||
-  ragData?.explanation ||
-  ragData;
-
-const title =
-  safeText(generated?.title) ||
-  (isEnglish
-    ? `Why ${regionName || "this region"} was recommended`
-    : `${regionName || "선택 지역"} 추천 근거`);
-
-const summary =
-  safeText(generated?.summary) ||
-  safeText(generated?.answer) ||
-  safeText(generated?.explanation) ||
-  "";
-
-const keyReasons = safeList(
-  generated?.keyReasons ||
-    generated?.key_reasons ||
-    generated?.reasons
-);
-
-const insights = safeList(generated?.insights);
-
-const dataBasis = safeList(
-  generated?.dataBasis ||
-    generated?.data_basis ||
-    generated?.metric_basis ||
-    generated?.sources
-);
-
-const notice = safeText(generated?.notice);
-
-  const retrievedContext =
-    ragData?.retrievedContext ||
-    ragData?.retrieved_context ||
-    ragData?.context ||
-    ragData?.ragContext ||
-    ragData?.rag_context ||
-    [];
-
-  const contextList = Array.isArray(retrievedContext)
-    ? retrievedContext
-    : typeof retrievedContext === "string"
-    ? [retrievedContext]
-    : [];
+  const notice = safeText(generated?.notice);
 
   const isFallback =
     ragData?.fallback ||
@@ -1220,8 +1189,8 @@ const notice = safeText(generated?.notice);
 
         <p>
           {isEnglish
-            ? "This explanation is generated using retrieved region data, category scores, user weights, detailed indicators, and source information."
-            : "이 설명은 선택 지역의 점수, 사용자 가중치, 상세 지표, 데이터 출처를 검색·조합한 RAG Context를 기반으로 생성되었습니다."}
+            ? "This explanation is generated using retrieved region data, selected preset, category scores, user weights, detailed indicators, and source information."
+            : "이 설명은 선택 지역의 점수, 선택 프리셋, 사용자 가중치, 상세 지표, 데이터 출처를 검색·조합한 RAG Context를 기반으로 생성되었습니다."}
         </p>
       </div>
 
@@ -1239,103 +1208,67 @@ const notice = safeText(generated?.notice);
 
       {!ragLoading && !ragError && ragData && (
         <>
-          <article className="rag-summary">
-            <strong>{isEnglish ? "Summary" : "요약"}</strong>
-            <p>
-              {summary ||
-                (isEnglish
-                  ? "The selected region was recommended based on its relative performance under the current weights."
-                  : "선택 지역은 현재 가중치 기준에서 상대적으로 높은 적합도를 보여 추천되었습니다.")}
-            </p>
-          </article>
-
-          <div className="rag-card-grid">
-            <article className="rag-card">
-              <h4>{isEnglish ? "Key reasons" : "추천 핵심 이유"}</h4>
-              {keyReasons.length > 0 ? (
-                <ul>
-                  {keyReasons.map((item, index) => (
-                    <li key={`reason-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>
-                  {isEnglish
-                    ? "The region shows strong suitability in the current recommendation result."
-                    : "현재 추천 결과에서 주요 카테고리 적합도가 높게 반영되었습니다."}
-                </p>
-              )}
+          <div className="rag-column-grid">
+            <article className="rag-card rag-wide-card">
+              <h4>
+                {isEnglish
+                  ? "Preset perspective"
+                  : "프리셋 선택 관점 해석"}
+              </h4>
+              <p>
+                {presetPerspective ||
+                  (isEnglish
+                    ? "From the selected preset perspective, this region shows suitability based on the current weights and available indicator data."
+                    : "선택한 프리셋 관점에서 이 지역은 현재 가중치와 지표 데이터 기준으로 장기체류 후보지로 적합하게 나타났습니다.")}
+              </p>
             </article>
 
-            <article className="rag-card">
-              <h4>{isEnglish ? "Stay insight" : "체류 인사이트"}</h4>
-              {insights.length > 0 ? (
-                <ul>
-                  {insights.map((item, index) => (
-                    <li key={`insight-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>
-                  {isEnglish
-                    ? "This region may be suitable depending on your long-term stay preferences."
-                    : "장기체류 목적과 사용자가 설정한 조건에 따라 적합도가 달라질 수 있습니다."}
-                </p>
-              )}
+            <article className="rag-card rag-wide-card">
+              <h4>
+                {isEnglish
+                  ? "Score contribution"
+                  : "점수 기여도 설명"}
+              </h4>
+              <p>
+                {scoreContribution ||
+                  (isEnglish
+                    ? "The final score reflects the selected category weights and the region's relative category scores."
+                    : "최종 점수에는 사용자가 설정한 카테고리 가중치와 지역별 상대점수가 함께 반영되었습니다.")}
+              </p>
             </article>
 
-            <article className="rag-card">
-              <h4>{isEnglish ? "Data basis" : "데이터 근거"}</h4>
-              {dataBasis.length > 0 ? (
-                <ul>
-                  {dataBasis.map((item, index) => (
-                    <li key={`basis-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>
-                  {isEnglish
-                    ? "The response is based on public-data indicators and relative category scores."
-                    : "공공데이터 기반 지표와 카테고리 상대점수를 바탕으로 설명합니다."}
-                </p>
-              )}
+            <article className="rag-card rag-wide-card">
+              <h4>
+                {isEnglish
+                  ? "Integrated summary"
+                  : "통합 의견"}
+              </h4>
+              <p>
+                {integratedSummary ||
+                  (isEnglish
+                    ? "This region can be considered a suitable candidate under the current recommendation conditions, while relatively weaker indicators should be reviewed before making a final decision."
+                    : "이 지역은 현재 추천 조건에서 장기체류 후보지로 검토할 만하며, 상대적으로 낮은 지표는 실제 선택 전에 함께 확인하는 것이 좋습니다.")}
+              </p>
             </article>
 
-            <article className="rag-card">
+            <article className="rag-card rag-wide-card rag-notice-card">
               <h4>{isEnglish ? "Note" : "참고할 점"}</h4>
               <p>
-                {isEnglish
-                  ? "This is a relative recommendation based on available data, not an absolute evaluation of the region."
-                  : "이 결과는 사용 가능한 데이터 기반의 상대 추천이며, 해당 지역에 대한 절대 평가가 아닙니다."}
+                {notice ||
+                  (isEnglish
+                    ? "This is a relative recommendation based on available public data, not an absolute evaluation of the region."
+                    : "이 결과는 사용 가능한 공공데이터 기반 상대 추천이며, 해당 지역에 대한 절대 평가가 아닙니다.")}
               </p>
             </article>
           </div>
 
-          {contextList.length > 0 && (
-            <details className="rag-context-box">
-              <summary>
-                {isEnglish
-                  ? "View retrieved RAG context"
-                  : "검색된 RAG 근거 Context 보기"}
-              </summary>
-              <ul>
-                {contextList.slice(0, 8).map((item, index) => (
-                  <li key={`context-${index}`}>
-                    {typeof item === "string"
-                      ? item
-                      : JSON.stringify(item, null, 2)}
-                  </li>
-                ))}
-              </ul>
-            </details>
-          )}
         </>
       )}
     </section>
   );
 }
 
-function DetailModal({ region, mode, isEnglish,  weights, onClose, onOpenMap }) {
+function DetailModal({ region, mode, isEnglish, weights, presetId, onClose, onOpenMap }) {
   const isSenior = mode === "senior";
   return (
     <div className="modal-backdrop">
@@ -1384,6 +1317,7 @@ function DetailModal({ region, mode, isEnglish,  weights, onClose, onOpenMap }) 
               <RagInsightPanel
                 region={region}
                 weights={weights}
+                presetId={presetId}
                 isEnglish={isEnglish}
               />
             )}

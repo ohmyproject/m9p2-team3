@@ -10,6 +10,39 @@ from app.models.schemas import Region
 from app.services.recommender import calculate_final_score, normalize_dict
 from app.services.repository import RegionRepository
 
+PRESET_LABELS = {
+    "default": {
+        "ko": "표준 체류형",
+        "en": "Standard Stay",
+        "description_ko": "생활편의, 문화·여가·디지털, 안전, 교통, 자연을 균형 있게 고려하는 기본 체류 유형입니다.",
+        "description_en": "A balanced stay type that considers convenience, culture/leisure/digital, safety, transportation, and nature.",
+    },
+    "foreign_tourist": {
+        "ko": "해외 관광객",
+        "en": "Foreign Tourist",
+        "description_ko": "관광숙박, 문화시설, 공공 와이파이, 교통 접근성, 안전성을 중요하게 보는 체류 유형입니다.",
+        "description_en": "A stay type focused on accommodation, cultural facilities, public Wi-Fi, transportation access, and safety.",
+    },
+    "digital_nomad": {
+        "ko": "디지털 노마드",
+        "en": "Digital Nomad",
+        "description_ko": "공공 와이파이, 5G 통신 품질, 생활편의, 업무와 휴식의 균형을 중요하게 보는 체류 유형입니다.",
+        "description_en": "A stay type focused on public Wi-Fi, 5G quality, daily convenience, and a balance between work and leisure.",
+    },
+    "senior_traveler": {
+        "ko": "액티브 시니어",
+        "en": "Active Senior",
+        "description_ko": "의료 접근성, 약국, 안전, 생활편의, 자연환경을 중요하게 보는 체류 유형입니다.",
+        "description_en": "A stay type focused on medical access, pharmacies, safety, daily convenience, and nature.",
+    },
+    "couple_culture": {
+        "ko": "나홀로 문화형",
+        "en": "Solo Cultural",
+        "description_ko": "문화시설, 관광숙박, 도시공원, 공공 와이파이, 도보 생활 편의성을 중요하게 보는 체류 유형입니다.",
+        "description_en": "A stay type focused on cultural facilities, accommodation, urban parks, public Wi-Fi, and walkable daily life.",
+    },
+}
+
 CATEGORY_LABELS = {
     "traffic": {"ko": "교통", "en": "Traffic"},
     "culture": {"ko": "문화·여가·디지털", "en": "Culture, Leisure & Digital"},
@@ -84,13 +117,19 @@ def _important_weights(weights: Dict[str, float], limit: int = 2) -> List[Dict[s
     ]
 
 
-def build_region_rag_context(region: Region, weights: Dict[str, float], language: str = "ko") -> Dict[str, Any]:
+def build_region_rag_context(
+    region: Region,
+    weights: Dict[str, float],
+    language: str,
+    preset_id: str | None = "default",
+) -> Dict[str, Any]:
     normalized_weights = normalize_dict(weights)
     final_score = calculate_final_score(region, normalized_weights)
     top_categories = _top_categories(region)
     weak_categories = _weak_categories(region)
     top_metrics = _top_metrics(region)
     important_weights = _important_weights(normalized_weights)
+    preset_info = PRESET_LABELS.get(preset_id or "default", PRESET_LABELS["default"])
 
     evidence_items: List[Dict[str, Any]] = []
     for item in top_categories:
@@ -117,6 +156,11 @@ def build_region_rag_context(region: Region, weights: Dict[str, float], language
         )
 
     return {
+        "preset": {
+        "preset_id": preset_id or "default",
+        "name": preset_info["en"] if language == "en" else preset_info["ko"],
+        "description": preset_info["description_en"] if language == "en" else preset_info["description_ko"],
+        },
         "region": {
             "id": region.region_id,
             "name_ko": region.region_name_ko,
@@ -200,17 +244,85 @@ def _fallback_explanation(context: Dict[str, Any]) -> Dict[str, Any]:
 
 def _build_prompt(context: Dict[str, Any]) -> List[Dict[str, str]]:
     language = context.get("language", "ko")
-    output_language = "English" if language == "en" else "Korean"
-    system = (
-        "You are MEOMUM's RAG-based recommendation explainer. "
-        "Use only the provided context. Do not invent scores, sources, rankings, or facts. "
-        "Explain why the selected region was recommended for a long-stay user. "
-        "Avoid absolute claims such as safest, best, or guaranteed. "
-        "Return valid JSON only with keys: title, summary, key_reasons, insights, metric_basis, notice. "
-        f"Write in {output_language}."
-    )
-    user = json.dumps(context, ensure_ascii=False, indent=2)
-    return [{"role": "system", "content": system}, {"role": "user", "content": user}]
+
+    if language == "en":
+        system_prompt = """
+You are MEOMUM's RAG-based long-term stay recommendation explanation AI.
+
+Use only the provided RAG Context.
+Do not invent scores, rankings, indicators, or sources.
+Explain the result from the selected preset and user-weight perspective.
+Do not describe the region as absolutely good or bad. Use expressions such as "based on the current weights", "relative score", and "public-data-based recommendation".
+
+Return only a JSON object.
+Do not use markdown code blocks.
+
+JSON format:
+{
+  "title": "Why this region was recommended",
+  "preset_perspective": "Explain why this region fits the selected preset or user preference perspective.",
+  "score_contribution": "Explain how category weights and detailed indicators contributed to the final score.",
+  "integrated_summary": "Summarize strengths, cautions, and overall suitability for long-term stay.",
+  "notice": "This is a relative recommendation based on available public data, not an absolute evaluation of the region."
+}
+
+Rules:
+- preset_perspective must use preset.name and preset.description from the RAG Context.
+- score_contribution must connect high-weight categories, category scores, and detailed indicators.
+- integrated_summary must include both strengths and relatively weaker points.
+- Each field should be written as a natural paragraph of 2 to 4 sentences.
+"""
+        user_prompt = f"""
+Below is the RAG Context for explaining a MEOMUM recommendation result.
+Use the preset information when writing preset_perspective.
+
+RAG Context:
+{json.dumps(context, ensure_ascii=False, indent=2)}
+"""
+    else:
+        system_prompt = """
+너는 MEOMUM의 RAG 기반 장기체류 지역 추천 해설 AI이다.
+
+반드시 제공된 RAG Context 안의 데이터만 근거로 사용한다.
+새로운 점수, 순위, 지표, 출처를 임의로 만들지 않는다.
+답변은 사용자가 선택한 프리셋과 가중치 관점에서 해석한다.
+지역에 대한 절대 평가처럼 말하지 말고, '현재 가중치 기준', '상대점수 기준', '공공데이터 기반'이라는 표현을 사용한다.
+
+응답은 반드시 JSON 객체로만 작성한다.
+마크다운 코드블럭은 사용하지 않는다.
+
+JSON 형식:
+{
+  "title": "지역명 추천 이유",
+  "preset_perspective": "프리셋 선택 관점에서 이 지역이 왜 적합한지 설명",
+  "score_contribution": "가중치와 세부 지표가 최종 점수에 어떻게 기여했는지 설명",
+  "integrated_summary": "강점, 주의점, 장기체류 관점의 최종 의견을 종합적으로 설명",
+  "notice": "이 결과는 사용 가능한 공공데이터 기반 상대 추천이며, 해당 지역에 대한 절대 평가가 아닙니다."
+}
+
+작성 규칙:
+- preset_perspective 항목에서는 반드시 RAG Context의 preset.name과 preset.description을 반영한다.
+- score_contribution 항목에서는 높은 가중치 항목, 카테고리 상대점수, 세부 지표를 연결해서 설명한다.
+- integrated_summary 항목에서는 강점과 상대적으로 낮은 항목을 함께 설명한다.
+- 각 항목은 2~4문장 정도의 자연스러운 문단으로 작성한다.
+
+예시 문체:
+- 디지털 노마드 관점에서는 공공 와이파이, 5G 통신 품질, 생활편의 지표가 중요합니다. 현재 추천 지역은 통신 접근성과 생활 인프라가 양호해 원격근무 체류지로 적합합니다.
+- 생활편의 가중치가 높게 설정되어 병원 접근성, 약국 접근성, 행정민원시설 접근성이 최종 점수에 크게 반영되었습니다.
+- 다만 교통 접근성은 상대적으로 낮으므로 이동 계획을 미리 세우는 것이 좋습니다.
+"""
+        user_prompt = f"""
+아래는 MEOMUM 추천 결과를 설명하기 위한 RAG Context이다.
+특히 preset 정보를 반드시 반영해서 preset_perspective를 작성하라.
+
+RAG Context:
+{json.dumps(context, ensure_ascii=False, indent=2)}
+"""
+
+    return [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
 
 
 async def _call_openai(context: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -239,18 +351,37 @@ async def _call_openai(context: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return None
 
 
-async def explain_region(repo: RegionRepository, region_id: str, weights: Dict[str, float], language: str = "ko") -> Dict[str, Any]:
+async def explain_region(
+    repo: RegionRepository,
+    region_id: str,
+    weights: Dict[str, float],
+    language: str = "ko",
+    preset_id: str | None = "default",
+) -> Dict[str, Any]:
     region = await repo.get_region(region_id)
     if not region:
         raise ValueError("REGION_NOT_FOUND")
-    context = build_region_rag_context(region, weights, language)
+
+    context = build_region_rag_context(region, weights, language, preset_id)
+
     generated = await _call_openai(context)
     is_fallback = generated is None
     explanation = generated or _fallback_explanation(context)
-    return {"explanation": explanation, "rag_context": context, "is_fallback": is_fallback}
+
+    return {
+        "explanation": explanation,
+        "rag_context": context,
+        "is_fallback": is_fallback,
+    }
 
 
-async def compare_regions(repo: RegionRepository, region_ids: List[str], weights: Dict[str, float], language: str = "ko") -> Dict[str, Any]:
+async def compare_regions(
+    repo: RegionRepository,
+    region_ids: List[str],
+    weights: Dict[str, float],
+    language: str = "ko",
+    preset_id: str | None = "default",
+) -> Dict[str, Any]:
     if len(region_ids) < 2:
         raise ValueError("AT_LEAST_TWO_REGIONS_REQUIRED")
     regions = []
@@ -260,7 +391,7 @@ async def compare_regions(repo: RegionRepository, region_ids: List[str], weights
             raise ValueError("REGION_NOT_FOUND")
         regions.append(region)
 
-    contexts = [build_region_rag_context(region, weights, language) for region in regions]
+    contexts = [build_region_rag_context(region, weights, language, preset_id) for region in regions]
     sorted_contexts = sorted(contexts, key=lambda item: item["final_score"], reverse=True)
 
     if language == "en":

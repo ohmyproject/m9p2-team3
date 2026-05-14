@@ -2300,3 +2300,29 @@ button { font: inherit; cursor: pointer; }
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== RAG 3-block insight layout ===== */
+.rag-column-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.rag-wide-card {
+  padding: 20px;
+}
+
+.rag-wide-card h4 {
+  margin-bottom: 12px;
+  font-size: 17px;
+}
+
+.rag-wide-card p {
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.rag-notice-card {
+  background: #f8fafc;
+  border-style: dashed;
+}

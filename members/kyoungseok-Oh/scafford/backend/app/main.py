@@ -143,6 +143,7 @@ async def ai_explain_region(payload: AiExplainRegionRequest):
             region_id=payload.region_id,
             weights=payload.weights.model_dump(),
             language=payload.language,
+            preset_id=payload.preset_id,
         )
         return {"success": True, "data": result}
     except ValueError as exc:
@@ -159,6 +160,7 @@ async def ai_compare_regions(payload: AiCompareRegionsRequest):
             region_ids=payload.region_ids,
             weights=payload.weights.model_dump(),
             language=payload.language,
+            preset_id=payload.preset_id,
         )
         return {"success": True, "data": result}
     except ValueError as exc:
