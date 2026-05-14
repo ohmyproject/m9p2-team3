@@ -105,7 +105,10 @@ async def recommend(payload: RecommendationRequest):
     preset_id = payload.preset_id or "default"
 
     if payload.weights:
-        weights = payload.weights.normalized().model_dump()
+        try:
+            weights = payload.weights.normalized().model_dump()
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc))
     else:
         preset = await repo.get_preset(preset_id)
         if not preset:

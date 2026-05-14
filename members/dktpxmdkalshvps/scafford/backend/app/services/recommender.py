@@ -46,9 +46,10 @@ def build_reasons(region: Region, weights: Dict[str, float], language: str = "ko
 
 
 def rank_regions(regions: List[Region], weights: Dict[str, float], limit: int, language: str = "ko") -> List[RecommendationItem]:
-    ranked = sorted(regions, key=lambda r: calculate_final_score(r, weights), reverse=True)[:limit]
+    scored = [(calculate_final_score(r, weights), r) for r in regions]
+    ranked = sorted(scored, key=lambda x: x[0], reverse=True)[:limit]
     items = []
-    for idx, region in enumerate(ranked, start=1):
+    for idx, (final_score, region) in enumerate(ranked, start=1):
         items.append(
             RecommendationItem(
                 rank=idx,
@@ -58,7 +59,7 @@ def rank_regions(regions: List[Region], weights: Dict[str, float], limit: int, l
                 regionNameEn=region.region_name_en,
                 parentRegionNameKo=region.parent_region_name_ko,
                 parentLogoKey=region.parent_logo_key,
-                finalScore=calculate_final_score(region, weights),
+                finalScore=final_score,
                 categoryScores=region.categoryScores,
                 reasons=build_reasons(region, weights, language),
                 touristSpots=region.tourist_spots,

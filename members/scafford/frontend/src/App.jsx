@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import logoImage from "./assets/meomum-logo.png";
+<<<<<<<< Updated upstream:members/scafford/frontend/src/App.jsx
 import koreaMapImage from "./assets/korea-map.png";
+========
+import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps";
+import { Tooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css"; // 🚨 이 줄을 꼭 추가해 주세요!
+import { geoCentroid } from "d3-geo"; // 🚨 자동으로 땅 가운데를 찾아주는 도구 추가!
+>>>>>>>> Stashed changes:members/dktpxmdkalshvps/scafford/frontend/src/App.jsx
 
 const HELP_HERO_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuDGzN9jxwD0VvfAWl47Z7mDWFASDKBptm0hNNxZSayvGZ5_Kuhdoe8XLA9af-Jk8v1fsOm-kILtg1Bs5wIeZoPZemMbbCV3BQXaKacQb92bm0Ys28I6kJT958mEBDTI0IJqx4_U-aMyNoMlH1yOgqcvCvK3LrFa92SeAOLMMjX6VM0t0KpIo4r7pLFICZL7jXgBC1ba1oeXOsZLh-ImK5I6bhlEaEbI-SyNI7C7LcTR3xXdpx2F5kjSRqcZ-gc9RgUuy86C35phT52P";
 
@@ -22,33 +29,33 @@ const MODES = [
 const PRESETS = {
   standard: {
     ko: "표준 체류형",
-    en: "Standard Stay",
+    en: "Standard",
     icon: "♡",
-    weights: { traffic: 20, culture: 20, convenience: 25, safety: 20, nature: 15 },
+    weights: { traffic: 15, culture: 25, convenience: 28, safety: 17, nature: 15 },
   },
   tourist: {
     ko: "해외 관광객",
     en: "Foreign Tourist",
     icon: "◌",
-    weights: { traffic: 15, culture: 30, convenience: 25, safety: 15, nature: 15 },
+    weights: { traffic: 10, culture: 30, convenience: 25, safety: 18, nature: 17 },
   },
   nomad: {
     ko: "디지털 노마드",
     en: "Digital Nomad",
     icon: "♟",
-    weights: { traffic: 20, culture: 30, convenience: 25, safety: 10, nature: 15 },
+    weights: { traffic: 18, culture: 22, convenience: 30, safety: 15, nature: 15 },
   },
   senior: {
     ko: "액티브 시니어",
     en: "Active Senior",
     icon: "⌖",
-    weights: { traffic: 12, culture: 15, convenience: 33, safety: 20, nature: 20 },
+    weights: { traffic: 12, culture: 28, convenience: 25, safety: 15, nature: 20 },
   },
   solo: {
     ko: "나홀로 문화형",
-    en: "Solo Cultural",
+    en: "Solo Travel",
     icon: "○",
-    weights: { traffic: 18, culture: 35, convenience: 20, safety: 12, nature: 15 },
+    weights: { traffic: 15, culture: 32, convenience: 23, safety: 12, nature: 18 },
   },
 };
 
@@ -319,6 +326,149 @@ const REGION_LOGO_MAP = [
   [/제주|Jeju/i, "/assets/region_logo/Jeju.png"],
 ];
 
+
+const SIDO_NAMES_KO = [
+  "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시",
+  "세종특별자치시", "경기도", "강원특별자치도", "충청북도", "충청남도", "전북특별자치도", "전라북도",
+  "전라남도", "경상북도", "경상남도", "제주특별자치도",
+];
+
+const SIDO_ALIAS_TO_FULL_KO = {
+  서울: "서울특별시",
+  부산: "부산광역시",
+  대구: "대구광역시",
+  인천: "인천광역시",
+  광주: "광주광역시",
+  대전: "대전광역시",
+  울산: "울산광역시",
+  세종: "세종특별자치시",
+  경기: "경기도",
+  강원: "강원특별자치도",
+  충북: "충청북도",
+  충남: "충청남도",
+  전북: "전북특별자치도",
+  전남: "전라남도",
+  경북: "경상북도",
+  경남: "경상남도",
+  제주: "제주특별자치도",
+};
+
+const SIGUNGU_GROUPS_BY_SIDO_KO = {
+  서울특별시: ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"],
+  부산광역시: ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
+  대구광역시: ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"],
+  인천광역시: ["중구", "동구", "미추홀구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
+  광주광역시: ["동구", "서구", "남구", "북구", "광산구"],
+  대전광역시: ["동구", "중구", "서구", "유성구", "대덕구"],
+  울산광역시: ["중구", "남구", "동구", "북구", "울주군"],
+  세종특별자치시: ["세종시", "세종특별자치시"],
+  경기도: ["수원시", "성남시", "의정부시", "안양시", "부천시", "광명시", "평택시", "동두천시", "안산시", "고양시", "과천시", "구리시", "남양주시", "오산시", "시흥시", "군포시", "의왕시", "하남시", "용인시", "파주시", "이천시", "안성시", "김포시", "화성시", "광주시", "양주시", "포천시", "여주시", "연천군", "가평군", "양평군"],
+  강원특별자치도: ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "인제군", "고성군", "양양군"],
+  충청북도: ["청주시", "충주시", "제천시", "보은군", "옥천군", "영동군", "증평군", "진천군", "괴산군", "음성군", "단양군"],
+  충청남도: ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "금산군", "부여군", "서천군", "청양군", "홍성군", "예산군", "태안군"],
+  전북특별자치도: ["전주시", "군산시", "익산시", "정읍시", "남원시", "김제시", "완주군", "진안군", "무주군", "장수군", "임실군", "순창군", "고창군", "부안군"],
+  전라남도: ["목포시", "여수시", "순천시", "나주시", "광양시", "담양군", "곡성군", "구례군", "고흥군", "보성군", "화순군", "장흥군", "강진군", "해남군", "영암군", "무안군", "함평군", "영광군", "장성군", "완도군", "진도군", "신안군"],
+  경상북도: ["포항시", "경주시", "김천시", "안동시", "구미시", "영주시", "영천시", "상주시", "문경시", "경산시", "의성군", "청송군", "영양군", "영덕군", "청도군", "고령군", "성주군", "칠곡군", "예천군", "봉화군", "울진군", "울릉군"],
+  경상남도: ["창원시", "진주시", "통영시", "사천시", "김해시", "밀양시", "거제시", "양산시", "의령군", "함안군", "창녕군", "고성군", "남해군", "하동군", "산청군", "함양군", "거창군", "합천군"],
+  제주특별자치도: ["제주시", "서귀포시"],
+};
+
+const SIGUNGU_TO_SIDO_KO = (() => {
+  const candidates = {};
+  Object.entries(SIGUNGU_GROUPS_BY_SIDO_KO).forEach(([sido, names]) => {
+    names.forEach((name) => {
+      candidates[name] = candidates[name] || new Set();
+      candidates[name].add(sido);
+    });
+  });
+
+  return Object.fromEntries(
+    Object.entries(candidates)
+      .filter(([, sidos]) => sidos.size === 1)
+      .map(([name, sidos]) => [name, [...sidos][0]])
+  );
+})();
+
+const SIDO_ID_HINTS_KO = [
+  ["서울특별시", /seoul|서울/iu],
+  ["부산광역시", /busan|부산/iu],
+  ["대구광역시", /daegu|대구/iu],
+  ["인천광역시", /incheon|인천/iu],
+  ["광주광역시", /gwangju|광주/iu],
+  ["대전광역시", /daejeon|대전/iu],
+  ["울산광역시", /ulsan|울산/iu],
+  ["세종특별자치시", /sejong|세종/iu],
+  ["경기도", /gyeonggi|경기/iu],
+  ["강원특별자치도", /gangwon|강원/iu],
+  ["충청북도", /chungcheongbuk|chungbuk|충북|충청북/iu],
+  ["충청남도", /chungcheongnam|chungnam|충남|충청남/iu],
+  ["전북특별자치도", /jeonbuk|jeollabuk|전북|전라북/iu],
+  ["전라남도", /jeonnam|jeollanam|전남|전라남/iu],
+  ["경상북도", /gyeongbuk|gyeongsangbuk|경북|경상북/iu],
+  ["경상남도", /gyeongnam|gyeongsangnam|경남|경상남/iu],
+  ["제주특별자치도", /jeju|제주/iu],
+];
+
+function normalizeSidoNameKo(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (SIDO_NAMES_KO.includes(text)) return text === "전라북도" ? "전북특별자치도" : text;
+  if (SIDO_ALIAS_TO_FULL_KO[text]) return SIDO_ALIAS_TO_FULL_KO[text];
+  const contained = SIDO_NAMES_KO.find((name) => text.includes(name));
+  if (contained) return contained === "전라북도" ? "전북특별자치도" : contained;
+  const alias = Object.entries(SIDO_ALIAS_TO_FULL_KO).find(([shortName]) => text.includes(shortName));
+  return alias ? alias[1] : "";
+}
+
+function inferParentRegionNameKo(regionName, source = {}) {
+  const directParent = [
+    source.parentRegionNameKo,
+    source.parent_region_name_ko,
+    source.parentNameKo,
+    source.parent_name_ko,
+    source.parent_ko,
+    source.sidoNameKo,
+    source.sido_name_ko,
+    source.sido_name,
+    source.sido,
+    source.provinceNameKo,
+    source.province_name_ko,
+    source.province_ko,
+    source.province,
+    source.adm1NameKo,
+    source.adm1_name_ko,
+    source.doNameKo,
+    source.do_name_ko,
+  ].map(normalizeSidoNameKo).find(Boolean);
+
+  if (directParent) return directParent;
+
+  const name = String(regionName || "").trim();
+  if (!name || SIDO_NAMES_KO.includes(name)) return "";
+
+  const parentInName = normalizeSidoNameKo(name);
+  if (parentInName && name !== parentInName) return parentInName;
+
+  const idText = [
+    source.id,
+    source.region_id,
+    source.regionId,
+    source.regionCode,
+    source.region_code,
+    source.fullNameKo,
+    source.full_name_ko,
+    source.regionFullNameKo,
+    source.region_full_name_ko,
+    source.address,
+  ].filter(Boolean).join(" ");
+
+  const parentFromId = SIDO_ID_HINTS_KO.find(([, pattern]) => pattern.test(idText));
+  if (parentFromId) return parentFromId[0];
+
+  const lastToken = name.split(/\s+/).pop();
+  return SIGUNGU_TO_SIDO_KO[name] || SIGUNGU_TO_SIDO_KO[lastToken] || "";
+}
+
 function normalizedWeightsForApi(weights) {
   const total = Object.values(weights).reduce((sum, value) => sum + Number(value || 0), 0);
   if (!total) return { traffic: 0.15, culture: 0.25, convenience: 0.28, safety: 0.17, nature: 0.15 };
@@ -331,11 +481,59 @@ function regionLogoFor(region) {
   return found?.[1] || "";
 }
 
+function getRegionDisplayName(region, isEnglish = false) {
+  const regionName = String(
+    (isEnglish ? region?.en : region?.ko) ||
+    (isEnglish ? region?.regionNameEn : region?.regionNameKo) ||
+    region?.short ||
+    ""
+  ).trim();
+
+  const parentName = String(
+    (isEnglish ? region?.parentRegionNameEn : region?.parentRegionNameKo) ||
+    (isEnglish ? region?.parent_region_name_en : region?.parent_region_name_ko) ||
+    (!isEnglish ? inferParentRegionNameKo(regionName, region) : "") ||
+    ""
+  ).trim();
+
+  if (!parentName) return regionName;
+  if (!regionName) return parentName;
+  if (SIDO_NAMES_KO.includes(regionName)) return regionName;
+  if (regionName.includes(parentName)) return regionName;
+
+  return `${parentName} ${regionName}`.trim();
+}
+
+function getRegionOnlySearchName(region, isEnglish = false) {
+  const parentName =
+    (isEnglish ? region?.parentRegionNameEn : region?.parentRegionNameKo) ||
+    region?.parent_region_name_ko ||
+    region?.sido_name_ko ||
+    "";
+
+  const regionName =
+    (isEnglish ? region?.en : region?.ko) ||
+    region?.regionNameKo ||
+    region?.region_name_ko ||
+    region?.short ||
+    "";
+
+  const hasParentInRegion = parentName && regionName.includes(parentName);
+
+  return [hasParentInRegion ? "" : parentName, regionName]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+    .replace(/\s*(관광지|여행지|명소|가볼만한곳|맛집)\s*$/g, "")
+    .trim();
+}
+
 function normalizeApiRegion(item, weights) {
   const scores = item.categoryScores || item.category_scores || item.scores || {};
   const ko = item.regionNameKo || item.region_name_ko || item.regionName || item.name_ko || item.ko || "지역";
   const en = item.regionNameEn || item.region_name_en || item.name_en || item.en || ko;
-  const parentKo = item.parentRegionNameKo || item.parent_region_name_ko || item.parent_ko || item.sido_name_ko || "";
+  const parentKo = inferParentRegionNameKo(ko, item);
+  const parentEn = item.parentRegionNameEn || item.parent_region_name_en || item.parentNameEn || item.parent_name_en || item.parent_en || item.sidoNameEn || item.sido_name_en || item.provinceNameEn || item.province_name_en || item.province_en || "";
   const reasons = item.reasons || item.reason || [];
   const reasonText = Array.isArray(reasons) ? reasons[0] : reasons;
   const final = item.finalScore ?? item.final_score ?? calcFinalScore(scores, weights);
@@ -345,6 +543,7 @@ function normalizeApiRegion(item, weights) {
     en,
     short: item.shortName || item.short_name || ko.replace(/특별자치도|특별자치시|특별시|광역시|시|군|구/g, "").slice(0, 6),
     parentRegionNameKo: parentKo,
+    parentRegionNameEn: parentEn,
     scores: {
       traffic: Number(scores.traffic ?? 0),
       culture: Number(scores.culture ?? 0),
@@ -393,6 +592,7 @@ function App() {
   const [mapDrag, setMapDrag] = useState(null);
   const [remoteRankings, setRemoteRankings] = useState([]);
   const [apiStatus, setApiStatus] = useState({ loading: false, error: "" });
+  const [tooltipContent, setTooltipContent] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -490,9 +690,15 @@ function App() {
     }
   }
 
-  function openNaverMap(region) {
-    const url = region?.naverMap?.webUrl || region?.naverMap?.web_url || `https://map.naver.com/p/search/${encodeURIComponent(region.ko)}`;
-    window.open(url, "_blank");
+  function openNaverMap(region, event) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+
+    const regionName = getRegionOnlySearchName(region, isEnglish);
+    if (!regionName) return;
+
+    const url = `https://map.naver.com/p/search/${encodeURIComponent(regionName)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   async function shareCurrent() {
@@ -587,25 +793,8 @@ function App() {
 
       <section className="dashboard-layout">
         <aside className="left-panel">
-          <section className="soft-card preset-card">
-            <div className="card-title">⚡ {isEnglish ? "Presets" : "프리셋"}</div>
-            <div className="preset-list">
-              {Object.entries(PRESETS).map(([key, preset]) => (
-                <button
-                  key={key}
-                  className={`preset-item ${selectedPreset === key ? "selected" : ""}`}
-                  onClick={() => applyPreset(key)}
-                >
-                  <span className="preset-emoji">{preset.icon}</span>
-                  <div>
-                    <strong>{isEnglish ? preset.en : preset.ko}</strong>
-                    <small>{preset.en}</small>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-
+          {isDetail ? (
+            <>
           <section className="soft-card weight-card">
             <div className="card-title">◷ {isEnglish ? "5 Category Weights" : "5대 카테고리 가중치"}</div>
             <div className="slider-list">
@@ -641,14 +830,90 @@ function App() {
               <button onClick={resetWeights}>↻ Reset</button>
             </div>
           </section>
+          <section className="soft-card preset-card">
+            <div className="card-title">⚡ {isEnglish ? "Customize" : "맞춤 설정"}</div>
+            <div className="preset-list">
+              {Object.entries(PRESETS).map(([key, preset]) => (
+                <button
+                  key={key}
+                  className={`preset-item ${selectedPreset === key ? "selected" : ""}`}
+                  onClick={() => applyPreset(key)}
+                >
+                  <span className="preset-emoji">{preset.icon}</span>
+                  <div>
+                    <strong>{isEnglish ? preset.en : preset.ko}</strong>
+                    <small>{preset.en}</small>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+            </>
+          ) : (
+            <>
+          <section className="soft-card preset-card">
+            <div className="card-title">⚡ {isEnglish ? "Customize" : "맞춤 설정"}</div>
+            <div className="preset-list">
+              {Object.entries(PRESETS).map(([key, preset]) => (
+                <button
+                  key={key}
+                  className={`preset-item ${selectedPreset === key ? "selected" : ""}`}
+                  onClick={() => applyPreset(key)}
+                >
+                  <span className="preset-emoji">{preset.icon}</span>
+                  <div>
+                    <strong>{isEnglish ? preset.en : preset.ko}</strong>
+                    <small>{preset.en}</small>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+          <section className="soft-card weight-card">
+            <div className="card-title">◷ {isEnglish ? "5 Category Weights" : "5대 카테고리 가중치"}</div>
+            <div className="slider-list">
+              {CATEGORIES.map((category) => (
+                <div className="slider-row" key={category.key}>
+                  <div className="slider-head">
+                    <span><i>{category.icon}</i>{isEnglish ? category.en : category.ko}</span>
+                    <label className="weight-number-wrap" aria-label={`${isEnglish ? category.en : category.ko} weight value`}>
+                      <input
+                        className="weight-number-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={weights[category.key]}
+                        onChange={(event) => updateWeight(category.key, event.target.value)}
+                        onBlur={(event) => updateWeight(category.key, event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={weights[category.key]}
+                    onChange={(event) => updateWeight(category.key, event.target.value)}
+                  />
+                  <div className="slider-scale"><span>Low</span><span>High</span></div>
+                </div>
+              ))}
+            </div>
+            <div className="weight-actions">
+              <span>{isEnglish ? "Applied to all calculations" : "전체와 계산 적용"}</span>
+              <button onClick={resetWeights}>↻ Reset</button>
+            </div>
+          </section>
+            </>
+          )}
         </aside>
 
-        <section className="map-card">
-          <div className="map-badge">🗺️ {isEnglish ? "Weighted Recommendation Map" : "가중치 기반 추천 지도"}{apiStatus.loading ? (isEnglish ? " · Loading" : " · 계산 중") : ""}</div>
-          <div className="zoom-controls">
-            <button aria-label="지도 확대" onClick={() => changeMapZoom(0.15)}>＋</button>
-            <button aria-label="지도 축소" onClick={() => changeMapZoom(-0.15)}>－</button>
+        <section className="map-card" style={{ position: 'relative', overflow: 'hidden' }}>
+          <div className="map-badge" style={{ position: 'absolute', top: '24px', left: '24px', zIndex: 10 }}>
+            🗺️ {isEnglish ? "Weighted Recommendation Map" : "가중치 기반 반응형 지도"}
+            {apiStatus.loading ? (isEnglish ? " · Loading" : " · 계산 중") : ""}
           </div>
+<<<<<<<< Updated upstream:members/scafford/frontend/src/App.jsx
           <div
             className={`map-wrap ${mapDrag ? "dragging" : ""}`}
             onContextMenu={(event) => event.preventDefault()}
@@ -665,15 +930,147 @@ function App() {
               draggable="false"
             />
           </div>
+========
+
+          <div className="zoom-controls" style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10 }}>
+            <button aria-label="지도 확대" onClick={() => changeMapZoom(0.5)}>＋</button>
+            <button aria-label="지도 축소" onClick={() => changeMapZoom(-0.5)}>－</button>
+          </div>
+
+          <ComposableMap
+            projection="geoMercator"
+            projectionConfig={{ scale: 4500 }}
+            style={{ width: "100%", height: "100%", minHeight: "500px", outline: "none", cursor: "grab" }}
+          >
+            <ZoomableGroup
+              center={[127.5, 36]}
+              zoom={mapZoom}
+              onMoveEnd={(position) => setMapZoom(position.zoom)}
+              maxZoom={10}
+            >
+              <Geographies geography="https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea_municipalities_geo_simple.json">
+                {({ geographies }) => {
+                  if (!geographies) return null;
+
+                  return (
+                    <>
+                      {/* 🗺️ 1. 땅(지역) 싹 그리기 */}
+                      {geographies.map((geo) => {
+                        const mapName = (geo?.properties?.name || "").replace(/\s+/g, ''); // 예: "부천시원미구", "종로구"
+
+                        const rankIndex = rankings.findIndex(r => {
+                          const rKo = (r.ko || "").replace(/\s+/g, ''); // 예: "경기도부천시"
+                          const rShort = (r.short || "").replace(/\s+/g, '');
+
+                          // 🚨 핵심 로직: "경기도 부천시"에서 마지막 단어인 "부천시"만 추출!
+                          const parts = (r.ko || "").trim().split(/\s+/);
+                          const coreName = parts[parts.length - 1]; // "부천시", "종로구" 등
+
+                          return mapName === rKo || mapName === rShort ||
+                            mapName.includes(coreName) || // "부천시원미구"가 "부천시"를 포함하면 합격!
+                            rKo.includes(mapName);        // "서울특별시종로구"가 "종로구"를 포함하면 합격!
+                        });
+
+                        const isTop5 = rankIndex !== -1 && rankIndex < 5;
+                        const rankColors = ["#2d4a22", "#4b7a3a", "#6ab354", "#97b986", "#c3d6b8"];
+                        const fillColor = isTop5 ? rankColors[rankIndex] : "#e2e8f0";
+                        const strokeColor = isTop5 ? fillColor : "#ffffff"; // 구 경계선 숨기기
+
+                        return (
+                          <Geography
+                            key={geo.rsmKey || geo.properties.code}
+                            geography={geo}
+                            fill={fillColor}
+                            stroke={strokeColor}
+                            strokeWidth={0.5 / mapZoom}
+                            style={{
+                              default: { outline: "none", transition: "fill 0.3s ease" },
+                              hover: { fill: "#db9ebb", cursor: "pointer", outline: "none" },
+                              pressed: { outline: "none" }
+                            }}
+                            onMouseEnter={() => setTooltipContent(isTop5 ? `${getRegionDisplayName(rankings[rankIndex], false)}: 🏆 ${rankIndex + 1}위` : (geo?.properties?.name || ""))}
+                            onMouseLeave={() => setTooltipContent("")}
+                            onClick={() => { if (isTop5) setSelectedRegionId(rankings[rankIndex].id); }}
+                            data-tooltip-id="map-tooltip"
+                            data-tooltip-content={tooltipContent}
+                          />
+                        );
+                      })}
+
+                      {/* 📍 2. Top 5 마커 꽂기 */}
+                      {rankings.slice(0, 5).map((rankedRegion, rankIndex) => {
+                        const rKo = (rankedRegion.ko || "").replace(/\s+/g, '');
+                        const rShort = (rankedRegion.short || "").replace(/\s+/g, '');
+                        const parts = (rankedRegion.ko || "").trim().split(/\s+/);
+                        const coreName = parts[parts.length - 1];
+
+                        const matchingGeos = geographies.filter(geo => {
+                          const mapName = (geo?.properties?.name || "").replace(/\s+/g, '');
+                          return mapName === rKo || mapName === rShort ||
+                            mapName.includes(coreName) ||
+                            rKo.includes(mapName);
+                        });
+
+                        if (matchingGeos.length === 0) return null;
+
+                        // 여러 개의 '구'가 합쳐져 있어도 마커는 무조건 1개만 꽂습니다.
+                        const centroid = geoCentroid(matchingGeos[0]);
+                        const isFirst = rankIndex === 0;
+
+                        return (
+                          <Marker
+                            key={`marker-rank-${rankedRegion.id}`}
+                            coordinates={centroid}
+                            onMouseEnter={() => setTooltipContent(`${getRegionDisplayName(rankedRegion, false)}: 🏆 ${rankIndex + 1}위`)}
+                            onMouseLeave={() => setTooltipContent("")}
+                            onClick={() => setSelectedRegionId(rankedRegion.id)}
+                            data-tooltip-id="map-tooltip"
+                            data-tooltip-content={tooltipContent}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <g
+                              transform="translate(-12, -24)"
+                              style={{ transition: "all 0.2s ease-in-out" }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = "translate(-12px, -30px) scale(1.15)"}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = "translate(-12px, -24px) scale(1)"}
+                            >
+                              <path
+                                d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8zm0 11.5c-1.93 0-3.5-1.57-3.5-3.5S10.07 4.5 12 4.5 15.5 6.07 15.5 8 13.93 11.5 12 11.5z"
+                                fill={isFirst ? "#db9ebb" : "#2d4a22"}
+                              />
+                              <text
+                                y="-5"
+                                x="12"
+                                textAnchor="middle"
+                                fill={isFirst ? "#db9ebb" : "#2d4a22"}
+                                fontSize="14px"
+                                fontWeight="bold"
+                                style={{ textShadow: "1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff" }}
+                              >
+                                {rankIndex + 1}위
+                              </text>
+                            </g>
+                          </Marker>
+                        );
+                      })}
+                    </>
+                  );
+                }}
+              </Geographies>
+            </ZoomableGroup>
+          </ComposableMap>
+
+          <Tooltip id="map-tooltip" />
+>>>>>>>> Stashed changes:members/dktpxmdkalshvps/scafford/frontend/src/App.jsx
         </section>
 
         <aside className="right-panel">
           <div className="results-head">
-            <h2>🏆 {isEnglish ? "Top 5 Results" : "추천 결과 Top 5"}</h2>
-            <p>{apiStatus.error ? (isEnglish ? "Using local fallback data." : "API 연결 실패 시 로컬 예시 데이터를 표시합니다.") : (isEnglish ? "Calculated from the five category weights." : "5대 카테고리 가중치를 기반으로 계산되었습니다.")}</p>
+            <h2> {isEnglish ? "Top 5 Results" : "추천 결과 Top 5"}</h2>
+            <p> {apiStatus.error ? (isEnglish ? "Using local fallback data." : "API 연결 실패 시 로컬 예시 데이터를 표시합니다.") : (isEnglish ? "Calculated from the five category weights." : "5개의 카테고리를 기반으로 계산되었습니다.")}</p>
           </div>
           <div className="result-tabs">
-            <button className="active">⚡ {isEnglish ? "Results" : "추천 결과"}</button>
+            <button className="active">{isEnglish ? "Results" : "추천 결과"}</button>
             <button onClick={shareCurrent}>⌘ {isEnglish ? "Share" : "공유"}</button>
           </div>
           <div className="result-list">
@@ -688,6 +1085,7 @@ function App() {
                 isDetail={isDetail}
                 onSelect={() => setSelectedRegionId(region.id)}
                 onDetail={() => openDetail(region)}
+                onNaver={(event) => openNaverMap(region, event)}
               />
             ))}
           </div>
@@ -700,7 +1098,7 @@ function App() {
           mode={mode}
           isEnglish={isEnglish}
           onClose={() => setDetailRegion(null)}
-          onOpenMap={() => openNaverMap(detailRegion)}
+          onOpenMap={(event) => openNaverMap(detailRegion, event)}
         />
       )}
 
@@ -709,8 +1107,26 @@ function App() {
   );
 }
 
-function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDetail, onSelect, onDetail }) {
+function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDetail, onSelect, onDetail, onNaver }) {
   const percent = clampScore(region.finalScore);
+  const displayName = getRegionDisplayName(region, isEnglish);
+  const parentName = (isEnglish ? region.parentRegionNameEn : region.parentRegionNameKo) || "";
+  const shouldShowParentSub = parentName && !displayName.includes(parentName);
+  const isSimple = !isDetail && !isSenior;
+  const actionLabel = isSimple
+    ? (isEnglish ? "Naver Map" : "네이버 지도")
+    : (isEnglish ? "View Details" : "상세 보기");
+  const handleAction = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isSimple) {
+      onNaver?.(event);
+      return;
+    }
+
+    onDetail?.();
+  };
   return (
     <article className={`result-card ${selected ? "selected" : ""}`} onClick={onSelect}>
       <span className="rank-num">#{rank}</span>
@@ -719,14 +1135,14 @@ function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDet
           <span>{(region.finalScore / 10).toFixed(1)}<small>/10</small></span>
         </div>
         <div className="result-text">
-          <h3>{isEnglish ? region.en : region.ko}</h3>
-          <p className="region-sub">{isEnglish ? region.en : region.ko}</p>
+          <h3>{displayName}</h3>
+          {shouldShowParentSub && <p className="region-sub">{parentName}</p>}
           <p>{isEnglish ? "This region matches your current preferences." : isSenior ? region.seniorReason : region.reason}</p>
         </div>
       </div>
       <div className="result-bottom">
         <span>finalScore <b>{percent}%</b></span>
-        <button onClick={(event) => { event.stopPropagation(); onDetail(); }}>{isEnglish ? "View Details" : "상세 보기"}</button>
+        <button type="button" onClick={handleAction}>{actionLabel}</button>
       </div>
       {isDetail && (
         <div className="mini-scores">
@@ -803,28 +1219,36 @@ function RadarChart({ scores, isEnglish = false }) {
 
 function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
   const isSenior = mode === "senior";
+  const displayName = getRegionDisplayName(region, isEnglish);
   return (
     <div className="modal-backdrop">
       <section className={`detail-modal ${isSenior ? "senior-modal" : ""}`}>
-        <button className="modal-close" onClick={onClose} aria-label="닫기">×</button>
+        <button type="button" className="modal-close" onClick={onClose} aria-label="닫기">×</button>
         <header className="detail-header">
           <p>{isEnglish ? "Region Detail Panel" : "지역 상세 패널"}</p>
-          <h1>{isEnglish ? region.en : region.short}</h1>
+          <h1>{displayName}</h1>
           <span>{isEnglish ? "Selected region" : region.en}</span>
         </header>
         <div className="detail-body">
           <aside className="detail-left">
             <div className="region-image-card">
-              {region.logoUrl ? <img src={region.logoUrl} alt={isEnglish ? `${region.en} logo` : `${region.ko} 로고`} /> : <span>{isEnglish ? region.en : region.short}</span>}
+              {region.logoUrl ? (
+                <img
+                  src={region.logoUrl}
+                  alt={isEnglish ? `${displayName} logo` : `${displayName} 로고`}
+                  /* 🚨 마법의 스타일 추가: 삐져나오지 않고 박스 안에 쏙 들어가게 맞춤! */
+                  style={{ width: "100%", height: "100%", maxHeight: "80px", objectFit: "contain" }}
+                />
+              ) : (
+                <span>{isEnglish ? region.en : region.short}</span>
+              )}
             </div>
             <div className="detail-description">
-              {isEnglish
-                ? "This recommendation is based on the selected preference weights and regional indicator data."
-                : isSenior
-                ? region.seniorReason
-                : `${region.reason} FastAPI와 Supabase에서 조회한 지역 지표 기반 추천 결과입니다.`}
+              {region.reasons?.[0] || (isEnglish
+                ? "High contribution from daily convenience and culture, leisure, and digital indicators makes this area suitable for long-stay tourism."
+                : "생활편의와 문화·여가·디지털 지표 기여도가 높아 장기체류 관광에 적합합니다.")}
             </div>
-            <button className="naver-button" onClick={onOpenMap}>{isEnglish ? "Open Naver Map" : "Naver 지도 열기"}</button>
+            <button type="button" className="naver-button" onClick={onOpenMap}>{isEnglish ? "Open Naver Map" : "Naver 지도 열기"}</button>
           </aside>
           <main className="detail-right">
             <div className="bars">
@@ -967,16 +1391,49 @@ function IndicatorInfo({ isEnglish }) {
 }
 
 function Contact({ isEnglish }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+
+  const handleSend = () => {
+    const subject = encodeURIComponent(isEnglish ? "[Meomum] Inquiry" : "[머무름] 문의");
+    const body = encodeURIComponent(
+      `${isEnglish ? "Name" : "이름"}: ${name}\n${isEnglish ? "Email" : "이메일"}: ${email}\n\n${message}`
+    );
+    window.open(`mailto:dktpxmdkalshvps@gmail.com?subject=${subject}&body=${body}`);
+    setSent(true);
+  };
+
   return (
     <div className="contact-page">
       <h1>{isEnglish ? "Contact" : "문의하기"}</h1>
       <p>{isEnglish ? "Send your inquiry to the project team." : "서비스 관련 문의는 프로젝트 팀에 전달해 주세요."}</p>
-      <input placeholder={isEnglish ? "Name" : "이름"} />
-      <input placeholder={isEnglish ? "Email" : "이메일"} />
-      <textarea placeholder={isEnglish ? "Message" : "문의 내용"} />
-      <button onClick={() => setSent(true)}>{isEnglish ? "Send" : "보내기"}</button>
-      {sent && <p className="sent-message">{isEnglish ? "Your inquiry is marked as received." : "문의가 접수된 것으로 표시됩니다."}</p>}
+      <input
+        placeholder={isEnglish ? "Name" : "이름"}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        placeholder={isEnglish ? "Email" : "이메일"}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <textarea
+        placeholder={isEnglish ? "Message" : "문의 내용"}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <button onClick={handleSend} disabled={!name || !email || !message}>
+        {isEnglish ? "Send" : "보내기"}
+      </button>
+      {sent && (
+        <p className="sent-message">
+          {isEnglish
+            ? "Email client opened. Please send the email to complete your inquiry."
+            : "이메일 클라이언트가 열렸습니다. 이메일을 전송하면 문의가 완료됩니다."}
+        </p>
+      )}
     </div>
   );
 }

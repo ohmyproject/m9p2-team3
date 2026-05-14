@@ -1,11 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import logoImage from "./assets/meomum-logo.png";
+<<<<<<< Updated upstream
 import koreaMapImage from "./assets/korea-map.png";
+=======
+<<<<<<<< Updated upstream:members/scafford/frontend/src/App.jsx
+import koreaMapImage from "./assets/korea-map.png";
+========
+>>>>>>> Stashed changes
 import { ComposableMap, Geographies, Geography, ZoomableGroup, Marker } from "react-simple-maps";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css"; // 🚨 이 줄을 꼭 추가해 주세요!
 import { geoCentroid } from "d3-geo"; // 🚨 자동으로 땅 가운데를 찾아주는 도구 추가!
+<<<<<<< Updated upstream
+=======
+>>>>>>>> Stashed changes:members/dktpxmdkalshvps/scafford/frontend/src/App.jsx
+>>>>>>> Stashed changes
 
 const HELP_HERO_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuDGzN9jxwD0VvfAWl47Z7mDWFASDKBptm0hNNxZSayvGZ5_Kuhdoe8XLA9af-Jk8v1fsOm-kILtg1Bs5wIeZoPZemMbbCV3BQXaKacQb92bm0Ys28I6kJT958mEBDTI0IJqx4_U-aMyNoMlH1yOgqcvCvK3LrFa92SeAOLMMjX6VM0t0KpIo4r7pLFICZL7jXgBC1ba1oeXOsZLh-ImK5I6bhlEaEbI-SyNI7C7LcTR3xXdpx2F5kjSRqcZ-gc9RgUuy86C35phT52P";
 
@@ -26,26 +36,41 @@ const MODES = [
 const PRESETS = {
   standard: {
     ko: "표준 체류형",
+<<<<<<< Updated upstream
     en: "Standard Stay",
     icon: "♡",
     weights: { traffic: 20, culture: 20, convenience: 25, safety: 20, nature: 15 },
+=======
+    en: "Standard",
+    icon: "♡",
+    weights: { traffic: 15, culture: 25, convenience: 28, safety: 17, nature: 15 },
+>>>>>>> Stashed changes
   },
   tourist: {
     ko: "해외 관광객",
     en: "Foreign Tourist",
     icon: "◌",
+<<<<<<< Updated upstream
     weights: { traffic: 15, culture: 30, convenience: 25, safety: 15, nature: 15 },
+=======
+    weights: { traffic: 10, culture: 30, convenience: 25, safety: 18, nature: 17 },
+>>>>>>> Stashed changes
   },
   nomad: {
     ko: "디지털 노마드",
     en: "Digital Nomad",
     icon: "♟",
+<<<<<<< Updated upstream
     weights: { traffic: 20, culture: 30, convenience: 25, safety: 10, nature: 15 },
+=======
+    weights: { traffic: 18, culture: 22, convenience: 30, safety: 15, nature: 15 },
+>>>>>>> Stashed changes
   },
   senior: {
     ko: "액티브 시니어",
     en: "Active Senior",
     icon: "⌖",
+<<<<<<< Updated upstream
     weights: { traffic: 12, culture: 15, convenience: 33, safety: 20, nature: 20 },
   },
   solo: {
@@ -53,6 +78,15 @@ const PRESETS = {
     en: "Solo Cultural",
     icon: "○",
     weights: { traffic: 18, culture: 35, convenience: 20, safety: 12, nature: 15 },
+=======
+    weights: { traffic: 12, culture: 28, convenience: 25, safety: 15, nature: 20 },
+  },
+  solo: {
+    ko: "나홀로 문화형",
+    en: "Solo Travel",
+    icon: "○",
+    weights: { traffic: 15, culture: 32, convenience: 23, safety: 12, nature: 18 },
+>>>>>>> Stashed changes
   },
 };
 
@@ -323,6 +357,152 @@ const REGION_LOGO_MAP = [
   [/제주|Jeju/i, "/assets/region_logo/Jeju.png"],
 ];
 
+<<<<<<< Updated upstream
+=======
+
+const SIDO_NAMES_KO = [
+  "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시",
+  "세종특별자치시", "경기도", "강원특별자치도", "충청북도", "충청남도", "전북특별자치도", "전라북도",
+  "전라남도", "경상북도", "경상남도", "제주특별자치도",
+];
+
+const SIDO_ALIAS_TO_FULL_KO = {
+  서울: "서울특별시",
+  부산: "부산광역시",
+  대구: "대구광역시",
+  인천: "인천광역시",
+  광주: "광주광역시",
+  대전: "대전광역시",
+  울산: "울산광역시",
+  세종: "세종특별자치시",
+  경기: "경기도",
+  강원: "강원특별자치도",
+  충북: "충청북도",
+  충남: "충청남도",
+  전북: "전북특별자치도",
+  전남: "전라남도",
+  경북: "경상북도",
+  경남: "경상남도",
+  제주: "제주특별자치도",
+};
+
+const SIGUNGU_GROUPS_BY_SIDO_KO = {
+  서울특별시: ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"],
+  부산광역시: ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
+  대구광역시: ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군", "군위군"],
+  인천광역시: ["중구", "동구", "미추홀구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
+  광주광역시: ["동구", "서구", "남구", "북구", "광산구"],
+  대전광역시: ["동구", "중구", "서구", "유성구", "대덕구"],
+  울산광역시: ["중구", "남구", "동구", "북구", "울주군"],
+  세종특별자치시: ["세종시", "세종특별자치시"],
+  경기도: ["수원시", "성남시", "의정부시", "안양시", "부천시", "광명시", "평택시", "동두천시", "안산시", "고양시", "과천시", "구리시", "남양주시", "오산시", "시흥시", "군포시", "의왕시", "하남시", "용인시", "파주시", "이천시", "안성시", "김포시", "화성시", "광주시", "양주시", "포천시", "여주시", "연천군", "가평군", "양평군"],
+  강원특별자치도: ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "인제군", "고성군", "양양군"],
+  충청북도: ["청주시", "충주시", "제천시", "보은군", "옥천군", "영동군", "증평군", "진천군", "괴산군", "음성군", "단양군"],
+  충청남도: ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "금산군", "부여군", "서천군", "청양군", "홍성군", "예산군", "태안군"],
+  전북특별자치도: ["전주시", "군산시", "익산시", "정읍시", "남원시", "김제시", "완주군", "진안군", "무주군", "장수군", "임실군", "순창군", "고창군", "부안군"],
+  전라남도: ["목포시", "여수시", "순천시", "나주시", "광양시", "담양군", "곡성군", "구례군", "고흥군", "보성군", "화순군", "장흥군", "강진군", "해남군", "영암군", "무안군", "함평군", "영광군", "장성군", "완도군", "진도군", "신안군"],
+  경상북도: ["포항시", "경주시", "김천시", "안동시", "구미시", "영주시", "영천시", "상주시", "문경시", "경산시", "의성군", "청송군", "영양군", "영덕군", "청도군", "고령군", "성주군", "칠곡군", "예천군", "봉화군", "울진군", "울릉군"],
+  경상남도: ["창원시", "진주시", "통영시", "사천시", "김해시", "밀양시", "거제시", "양산시", "의령군", "함안군", "창녕군", "고성군", "남해군", "하동군", "산청군", "함양군", "거창군", "합천군"],
+  제주특별자치도: ["제주시", "서귀포시"],
+};
+
+const SIGUNGU_TO_SIDO_KO = (() => {
+  const candidates = {};
+  Object.entries(SIGUNGU_GROUPS_BY_SIDO_KO).forEach(([sido, names]) => {
+    names.forEach((name) => {
+      candidates[name] = candidates[name] || new Set();
+      candidates[name].add(sido);
+    });
+  });
+
+  return Object.fromEntries(
+    Object.entries(candidates)
+      .filter(([, sidos]) => sidos.size === 1)
+      .map(([name, sidos]) => [name, [...sidos][0]])
+  );
+})();
+
+const SIDO_ID_HINTS_KO = [
+  ["서울특별시", /seoul|서울/iu],
+  ["부산광역시", /busan|부산/iu],
+  ["대구광역시", /daegu|대구/iu],
+  ["인천광역시", /incheon|인천/iu],
+  ["광주광역시", /gwangju|광주/iu],
+  ["대전광역시", /daejeon|대전/iu],
+  ["울산광역시", /ulsan|울산/iu],
+  ["세종특별자치시", /sejong|세종/iu],
+  ["경기도", /gyeonggi|경기/iu],
+  ["강원특별자치도", /gangwon|강원/iu],
+  ["충청북도", /chungcheongbuk|chungbuk|충북|충청북/iu],
+  ["충청남도", /chungcheongnam|chungnam|충남|충청남/iu],
+  ["전북특별자치도", /jeonbuk|jeollabuk|전북|전라북/iu],
+  ["전라남도", /jeonnam|jeollanam|전남|전라남/iu],
+  ["경상북도", /gyeongbuk|gyeongsangbuk|경북|경상북/iu],
+  ["경상남도", /gyeongnam|gyeongsangnam|경남|경상남/iu],
+  ["제주특별자치도", /jeju|제주/iu],
+];
+
+function normalizeSidoNameKo(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (SIDO_NAMES_KO.includes(text)) return text === "전라북도" ? "전북특별자치도" : text;
+  if (SIDO_ALIAS_TO_FULL_KO[text]) return SIDO_ALIAS_TO_FULL_KO[text];
+  const contained = SIDO_NAMES_KO.find((name) => text.includes(name));
+  if (contained) return contained === "전라북도" ? "전북특별자치도" : contained;
+  const alias = Object.entries(SIDO_ALIAS_TO_FULL_KO).find(([shortName]) => text.includes(shortName));
+  return alias ? alias[1] : "";
+}
+
+function inferParentRegionNameKo(regionName, source = {}) {
+  const directParent = [
+    source.parentRegionNameKo,
+    source.parent_region_name_ko,
+    source.parentNameKo,
+    source.parent_name_ko,
+    source.parent_ko,
+    source.sidoNameKo,
+    source.sido_name_ko,
+    source.sido_name,
+    source.sido,
+    source.provinceNameKo,
+    source.province_name_ko,
+    source.province_ko,
+    source.province,
+    source.adm1NameKo,
+    source.adm1_name_ko,
+    source.doNameKo,
+    source.do_name_ko,
+  ].map(normalizeSidoNameKo).find(Boolean);
+
+  if (directParent) return directParent;
+
+  const name = String(regionName || "").trim();
+  if (!name || SIDO_NAMES_KO.includes(name)) return "";
+
+  const parentInName = normalizeSidoNameKo(name);
+  if (parentInName && name !== parentInName) return parentInName;
+
+  const idText = [
+    source.id,
+    source.region_id,
+    source.regionId,
+    source.regionCode,
+    source.region_code,
+    source.fullNameKo,
+    source.full_name_ko,
+    source.regionFullNameKo,
+    source.region_full_name_ko,
+    source.address,
+  ].filter(Boolean).join(" ");
+
+  const parentFromId = SIDO_ID_HINTS_KO.find(([, pattern]) => pattern.test(idText));
+  if (parentFromId) return parentFromId[0];
+
+  const lastToken = name.split(/\s+/).pop();
+  return SIGUNGU_TO_SIDO_KO[name] || SIGUNGU_TO_SIDO_KO[lastToken] || "";
+}
+
+>>>>>>> Stashed changes
 function normalizedWeightsForApi(weights) {
   const total = Object.values(weights).reduce((sum, value) => sum + Number(value || 0), 0);
   if (!total) return { traffic: 0.15, culture: 0.25, convenience: 0.28, safety: 0.17, nature: 0.15 };
@@ -335,6 +515,32 @@ function regionLogoFor(region) {
   return found?.[1] || "";
 }
 
+<<<<<<< Updated upstream
+=======
+function getRegionDisplayName(region, isEnglish = false) {
+  const regionName = String(
+    (isEnglish ? region?.en : region?.ko) ||
+    (isEnglish ? region?.regionNameEn : region?.regionNameKo) ||
+    region?.short ||
+    ""
+  ).trim();
+
+  const parentName = String(
+    (isEnglish ? region?.parentRegionNameEn : region?.parentRegionNameKo) ||
+    (isEnglish ? region?.parent_region_name_en : region?.parent_region_name_ko) ||
+    (!isEnglish ? inferParentRegionNameKo(regionName, region) : "") ||
+    ""
+  ).trim();
+
+  if (!parentName) return regionName;
+  if (!regionName) return parentName;
+  if (SIDO_NAMES_KO.includes(regionName)) return regionName;
+  if (regionName.includes(parentName)) return regionName;
+
+  return `${parentName} ${regionName}`.trim();
+}
+
+>>>>>>> Stashed changes
 function getRegionOnlySearchName(region, isEnglish = false) {
   const parentName =
     (isEnglish ? region?.parentRegionNameEn : region?.parentRegionNameKo) ||
@@ -363,7 +569,12 @@ function normalizeApiRegion(item, weights) {
   const scores = item.categoryScores || item.category_scores || item.scores || {};
   const ko = item.regionNameKo || item.region_name_ko || item.regionName || item.name_ko || item.ko || "지역";
   const en = item.regionNameEn || item.region_name_en || item.name_en || item.en || ko;
+<<<<<<< Updated upstream
   const parentKo = item.parentRegionNameKo || item.parent_region_name_ko || item.parent_ko || item.sido_name_ko || "";
+=======
+  const parentKo = inferParentRegionNameKo(ko, item);
+  const parentEn = item.parentRegionNameEn || item.parent_region_name_en || item.parentNameEn || item.parent_name_en || item.parent_en || item.sidoNameEn || item.sido_name_en || item.provinceNameEn || item.province_name_en || item.province_en || "";
+>>>>>>> Stashed changes
   const reasons = item.reasons || item.reason || [];
   const reasonText = Array.isArray(reasons) ? reasons[0] : reasons;
   const final = item.finalScore ?? item.final_score ?? calcFinalScore(scores, weights);
@@ -373,6 +584,10 @@ function normalizeApiRegion(item, weights) {
     en,
     short: item.shortName || item.short_name || ko.replace(/특별자치도|특별자치시|특별시|광역시|시|군|구/g, "").slice(0, 6),
     parentRegionNameKo: parentKo,
+<<<<<<< Updated upstream
+=======
+    parentRegionNameEn: parentEn,
+>>>>>>> Stashed changes
     scores: {
       traffic: Number(scores.traffic ?? 0),
       culture: Number(scores.culture ?? 0),
@@ -660,7 +875,11 @@ function App() {
             </div>
           </section>
           <section className="soft-card preset-card">
+<<<<<<< Updated upstream
             <div className="card-title">⚡ {isEnglish ? "Presets" : "프리셋"}</div>
+=======
+            <div className="card-title">⚡ {isEnglish ? "Customize" : "맞춤 설정"}</div>
+>>>>>>> Stashed changes
             <div className="preset-list">
               {Object.entries(PRESETS).map(([key, preset]) => (
                 <button
@@ -681,7 +900,11 @@ function App() {
           ) : (
             <>
           <section className="soft-card preset-card">
+<<<<<<< Updated upstream
             <div className="card-title">⚡ {isEnglish ? "Presets" : "프리셋"}</div>
+=======
+            <div className="card-title">⚡ {isEnglish ? "Customize" : "맞춤 설정"}</div>
+>>>>>>> Stashed changes
             <div className="preset-list">
               {Object.entries(PRESETS).map(([key, preset]) => (
                 <button
@@ -742,6 +965,27 @@ function App() {
             🗺️ {isEnglish ? "Weighted Recommendation Map" : "가중치 기반 반응형 지도"}
             {apiStatus.loading ? (isEnglish ? " · Loading" : " · 계산 중") : ""}
           </div>
+<<<<<<< Updated upstream
+=======
+<<<<<<<< Updated upstream:members/scafford/frontend/src/App.jsx
+          <div
+            className={`map-wrap ${mapDrag ? "dragging" : ""}`}
+            onContextMenu={(event) => event.preventDefault()}
+            onMouseDown={startMapDrag}
+            onMouseMove={moveMapDrag}
+            onMouseUp={stopMapDrag}
+            onMouseLeave={stopMapDrag}
+            title={isEnglish ? "Right-click and drag to move the map" : "우클릭 후 드래그하면 지도를 이동할 수 있습니다"}
+          >
+            <img
+              src={koreaMapImage}
+              alt="3D 한국 지도"
+              style={{ transform: `translate(${mapOffset.x}px, ${mapOffset.y}px) scale(${mapZoom})` }}
+              draggable="false"
+            />
+          </div>
+========
+>>>>>>> Stashed changes
 
           <div className="zoom-controls" style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10 }}>
             <button aria-label="지도 확대" onClick={() => changeMapZoom(0.5)}>＋</button>
@@ -799,7 +1043,11 @@ function App() {
                               hover: { fill: "#db9ebb", cursor: "pointer", outline: "none" },
                               pressed: { outline: "none" }
                             }}
+<<<<<<< Updated upstream
                             onMouseEnter={() => setTooltipContent(isTop5 ? `${rankings[rankIndex].ko}: 🏆 ${rankIndex + 1}위` : (geo?.properties?.name || ""))}
+=======
+                            onMouseEnter={() => setTooltipContent(isTop5 ? `${getRegionDisplayName(rankings[rankIndex], false)}: 🏆 ${rankIndex + 1}위` : (geo?.properties?.name || ""))}
+>>>>>>> Stashed changes
                             onMouseLeave={() => setTooltipContent("")}
                             onClick={() => { if (isTop5) setSelectedRegionId(rankings[rankIndex].id); }}
                             data-tooltip-id="map-tooltip"
@@ -832,7 +1080,11 @@ function App() {
                           <Marker
                             key={`marker-rank-${rankedRegion.id}`}
                             coordinates={centroid}
+<<<<<<< Updated upstream
                             onMouseEnter={() => setTooltipContent(`${rankedRegion.ko}: 🏆 ${rankIndex + 1}위`)}
+=======
+                            onMouseEnter={() => setTooltipContent(`${getRegionDisplayName(rankedRegion, false)}: 🏆 ${rankIndex + 1}위`)}
+>>>>>>> Stashed changes
                             onMouseLeave={() => setTooltipContent("")}
                             onClick={() => setSelectedRegionId(rankedRegion.id)}
                             data-tooltip-id="map-tooltip"
@@ -872,15 +1124,27 @@ function App() {
           </ComposableMap>
 
           <Tooltip id="map-tooltip" />
+<<<<<<< Updated upstream
+=======
+>>>>>>>> Stashed changes:members/dktpxmdkalshvps/scafford/frontend/src/App.jsx
+>>>>>>> Stashed changes
         </section>
 
         <aside className="right-panel">
           <div className="results-head">
+<<<<<<< Updated upstream
             <h2>🏆 {isEnglish ? "Top 5 Results" : "추천 결과 Top 5"}</h2>
             <p>{apiStatus.error ? (isEnglish ? "Using local fallback data." : "API 연결 실패 시 로컬 예시 데이터를 표시합니다.") : (isEnglish ? "Calculated from the five category weights." : "5대 카테고리 가중치를 기반으로 계산되었습니다.")}</p>
           </div>
           <div className="result-tabs">
             <button className="active">⚡ {isEnglish ? "Results" : "추천 결과"}</button>
+=======
+            <h2> {isEnglish ? "Top 5 Results" : "추천 결과 Top 5"}</h2>
+            <p> {apiStatus.error ? (isEnglish ? "Using local fallback data." : "API 연결 실패 시 로컬 예시 데이터를 표시합니다.") : (isEnglish ? "Calculated from the five category weights." : "5개의 카테고리를 기반으로 계산되었습니다.")}</p>
+          </div>
+          <div className="result-tabs">
+            <button className="active">{isEnglish ? "Results" : "추천 결과"}</button>
+>>>>>>> Stashed changes
             <button onClick={shareCurrent}>⌘ {isEnglish ? "Share" : "공유"}</button>
           </div>
           <div className="result-list">
@@ -919,6 +1183,12 @@ function App() {
 
 function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDetail, onSelect, onDetail, onNaver }) {
   const percent = clampScore(region.finalScore);
+<<<<<<< Updated upstream
+=======
+  const displayName = getRegionDisplayName(region, isEnglish);
+  const parentName = (isEnglish ? region.parentRegionNameEn : region.parentRegionNameKo) || "";
+  const shouldShowParentSub = parentName && !displayName.includes(parentName);
+>>>>>>> Stashed changes
   const isSimple = !isDetail && !isSenior;
   const actionLabel = isSimple
     ? (isEnglish ? "Naver Map" : "네이버 지도")
@@ -942,8 +1212,13 @@ function RecommendationCard({ region, rank, selected, isEnglish, isSenior, isDet
           <span>{(region.finalScore / 10).toFixed(1)}<small>/10</small></span>
         </div>
         <div className="result-text">
+<<<<<<< Updated upstream
           <h3>{isEnglish ? region.en : region.ko}</h3>
           <p className="region-sub">{isEnglish ? region.en : region.ko}</p>
+=======
+          <h3>{displayName}</h3>
+          {shouldShowParentSub && <p className="region-sub">{parentName}</p>}
+>>>>>>> Stashed changes
           <p>{isEnglish ? "This region matches your current preferences." : isSenior ? region.seniorReason : region.reason}</p>
         </div>
       </div>
@@ -1026,13 +1301,21 @@ function RadarChart({ scores, isEnglish = false }) {
 
 function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
   const isSenior = mode === "senior";
+<<<<<<< Updated upstream
+=======
+  const displayName = getRegionDisplayName(region, isEnglish);
+>>>>>>> Stashed changes
   return (
     <div className="modal-backdrop">
       <section className={`detail-modal ${isSenior ? "senior-modal" : ""}`}>
         <button type="button" className="modal-close" onClick={onClose} aria-label="닫기">×</button>
         <header className="detail-header">
           <p>{isEnglish ? "Region Detail Panel" : "지역 상세 패널"}</p>
+<<<<<<< Updated upstream
           <h1>{isEnglish ? region.en : region.short}</h1>
+=======
+          <h1>{displayName}</h1>
+>>>>>>> Stashed changes
           <span>{isEnglish ? "Selected region" : region.en}</span>
         </header>
         <div className="detail-body">
@@ -1041,7 +1324,11 @@ function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
               {region.logoUrl ? (
                 <img
                   src={region.logoUrl}
+<<<<<<< Updated upstream
                   alt={isEnglish ? `${region.en} logo` : `${region.ko} 로고`}
+=======
+                  alt={isEnglish ? `${displayName} logo` : `${displayName} 로고`}
+>>>>>>> Stashed changes
                   /* 🚨 마법의 스타일 추가: 삐져나오지 않고 박스 안에 쏙 들어가게 맞춤! */
                   style={{ width: "100%", height: "100%", maxHeight: "80px", objectFit: "contain" }}
                 />
@@ -1050,9 +1337,15 @@ function DetailModal({ region, mode, isEnglish, onClose, onOpenMap }) {
               )}
             </div>
             <div className="detail-description">
+<<<<<<< Updated upstream
               {isEnglish
                 ? "High contribution from daily convenience and culture, leisure, and digital indicators makes this area suitable for long-stay tourism."
                 : "생활편의와 문화·여가·디지털 지표 기여도가 높아 장기체류 관광에 적합합니다."}
+=======
+              {region.reasons?.[0] || (isEnglish
+                ? "High contribution from daily convenience and culture, leisure, and digital indicators makes this area suitable for long-stay tourism."
+                : "생활편의와 문화·여가·디지털 지표 기여도가 높아 장기체류 관광에 적합합니다.")}
+>>>>>>> Stashed changes
             </div>
             <button type="button" className="naver-button" onClick={onOpenMap}>{isEnglish ? "Open Naver Map" : "Naver 지도 열기"}</button>
           </aside>
@@ -1197,16 +1490,61 @@ function IndicatorInfo({ isEnglish }) {
 }
 
 function Contact({ isEnglish }) {
+<<<<<<< Updated upstream
   const [sent, setSent] = useState(false);
+=======
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const handleSend = () => {
+    const subject = encodeURIComponent(isEnglish ? "[Meomum] Inquiry" : "[머무름] 문의");
+    const body = encodeURIComponent(
+      `${isEnglish ? "Name" : "이름"}: ${name}\n${isEnglish ? "Email" : "이메일"}: ${email}\n\n${message}`
+    );
+    window.open(`mailto:dktpxmdkalshvps@gmail.com?subject=${subject}&body=${body}`);
+    setSent(true);
+  };
+
+>>>>>>> Stashed changes
   return (
     <div className="contact-page">
       <h1>{isEnglish ? "Contact" : "문의하기"}</h1>
       <p>{isEnglish ? "Send your inquiry to the project team." : "서비스 관련 문의는 프로젝트 팀에 전달해 주세요."}</p>
+<<<<<<< Updated upstream
       <input placeholder={isEnglish ? "Name" : "이름"} />
       <input placeholder={isEnglish ? "Email" : "이메일"} />
       <textarea placeholder={isEnglish ? "Message" : "문의 내용"} />
       <button onClick={() => setSent(true)}>{isEnglish ? "Send" : "보내기"}</button>
       {sent && <p className="sent-message">{isEnglish ? "Your inquiry is marked as received." : "문의가 접수된 것으로 표시됩니다."}</p>}
+=======
+      <input
+        placeholder={isEnglish ? "Name" : "이름"}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        placeholder={isEnglish ? "Email" : "이메일"}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <textarea
+        placeholder={isEnglish ? "Message" : "문의 내용"}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <button onClick={handleSend} disabled={!name || !email || !message}>
+        {isEnglish ? "Send" : "보내기"}
+      </button>
+      {sent && (
+        <p className="sent-message">
+          {isEnglish
+            ? "Email client opened. Please send the email to complete your inquiry."
+            : "이메일 클라이언트가 열렸습니다. 이메일을 전송하면 문의가 완료됩니다."}
+        </p>
+      )}
+>>>>>>> Stashed changes
     </div>
   );
 }
