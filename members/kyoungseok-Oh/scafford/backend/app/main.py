@@ -2,15 +2,10 @@ from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.models.schemas import (
-    AiCompareRegionsRequest,
-    AiExplainRegionRequest,
-    RecommendationRequest,
-    RecommendationResponse,
-)
+from app.models.schemas import AiExplainRegionRequest, RecommendationRequest, RecommendationResponse
 from app.services.recommender import normalize_dict, rank_regions
 from app.services.repository import RegionRepository
-from app.services.ai_rag import compare_regions, explain_region
+from app.services.ai_rag import explain_region
 
 
 settings = get_settings()
@@ -111,7 +106,10 @@ async def recommend(payload: RecommendationRequest):
     preset_id = payload.preset_id or "default"
 
     if payload.weights:
-        weights = payload.weights.normalized().model_dump()
+        try:
+            weights = payload.weights.normalized().model_dump()
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc))
     else:
         preset = await repo.get_preset(preset_id)
         if not preset:
@@ -141,23 +139,6 @@ async def ai_explain_region(payload: AiExplainRegionRequest):
         result = await explain_region(
             repo=repo,
             region_id=payload.region_id,
-            weights=payload.weights.model_dump(),
-            language=payload.language,
-            preset_id=payload.preset_id,
-        )
-        return {"success": True, "data": result}
-    except ValueError as exc:
-        if str(exc) == "REGION_NOT_FOUND":
-            raise HTTPException(status_code=404, detail="지역을 찾을 수 없습니다.")
-        raise HTTPException(status_code=400, detail=str(exc))
-
-
-@router.post("/ai/compare-regions")
-async def ai_compare_regions(payload: AiCompareRegionsRequest):
-    try:
-        result = await compare_regions(
-            repo=repo,
-            region_ids=payload.region_ids,
             weights=payload.weights.model_dump(),
             language=payload.language,
             preset_id=payload.preset_id,

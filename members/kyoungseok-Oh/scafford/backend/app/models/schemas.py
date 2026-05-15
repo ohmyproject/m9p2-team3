@@ -129,21 +129,3 @@ class AiExplainRegionRequest(BaseModel):
     language: Literal["ko", "en"] = "ko"
     preset_id: Optional[str] = "default"
 
-
-class AiCompareRegionsRequest(BaseModel):
-    region_ids: List[str] = Field(min_length=2, max_length=3)
-    weights: Weights
-    language: Literal["ko", "en"] = "ko"
-    preset_id: Optional[str] = "default"
-    @field_validator("region_ids")
-    @classmethod
-    def validate_region_ids(cls, value: List[str]) -> List[str]:
-        unique_ids = list(dict.fromkeys(value))
-
-        if len(unique_ids) < 2:
-            raise ValueError("비교할 지역은 최소 2개 이상이어야 합니다.")
-
-        if len(unique_ids) > 3:
-            raise ValueError("비교할 지역은 최대 3개까지 가능합니다.")
-
-        return unique_ids
